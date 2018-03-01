@@ -85,11 +85,11 @@ func loadData( ) []TestData {
 
 	//Load data
 	query := collection.Find( bson.M{} )
-	count, err := query.Count()
+	query = query.Sort( "value" )
 	if err != nil {panic( err)	}
 
 	//
-	fmt.Println( "Count:", count)
+	//fmt.Println( "Count:", count)
 	results := []TestData{}
 	query.All( &results )
 	for id, result := range results {
