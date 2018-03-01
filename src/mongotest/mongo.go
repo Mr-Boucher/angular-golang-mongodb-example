@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"crypto/tls"
 	"net"
 	"fmt"
@@ -11,61 +10,113 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
 	"encoding/json"
+	"strings"
+	"os"
 )
 
+//Test data format
 type TestData struct {
-	ObjectId   bson.ObjectId   `bson:"_id,omitempty" json:"-"`
-	Value      string   `bson:"value" json:"value"`
-	Id         string   `bson:"id" json:"id"`
+	ObjectId bson.ObjectId   `bson:"_id,omitempty" json:"-"` //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response) note the "-" it means that json does not have this
+	Value    string   `bson:"value" json:"value"`            //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
+	Id       string   `bson:"id" json:"id"`                  //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
 }
+
+type MongoDB struct {
+	databaseName string
+	collectionName string
+	cluster []string
+	userDatabase string
+	username string
+	password string
+}
+
+//Should be a constant but can't because of language restriction that const can't have arrays
+var mongoDB = MongoDB{ "dev", "test", []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"}, "admin", "dev", "dev" }
 
 //Kick it all off
 func main() {
-	loadData();
+	//Log start up arguments
+	fmt.Println(strings.Join(os.Args, " "))
+
+	//Find the start up port
+	port := "8000"; //default port
+	for _, arg := range os.Args[1:] {
+		arg := strings.Split(arg, "=")
+		if arg[0] == "port" {
+			port = arg[1]
+		}
+	}
+	fmt.Println("Starting up on", port)
+
+	//Setup route for incoming data requests
 	router := mux.NewRouter()
-	router.HandleFunc("/", GetData).Methods("GET")
-	router.HandleFunc("/loaddata", GetData).Methods("GET", "OPTIONS")//.Headers("Content-Type", "application/json")
-	router.HandleFunc("/deletedata/{id}", DeleteData).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	router.HandleFunc("/data", options).Methods("OPTIONS") //Setup data the REST API and call options
+	router.HandleFunc("/data/{id:[0-9]+}", options).Methods("OPTIONS") //Setup data the REST API and options
+
+	router.HandleFunc("/data", getData).Methods("GET") //Setup data as the REST API and call GetData for get requests
+	router.HandleFunc("/data", createData).Methods("POST") //Setup data the REST API and call CreateData for delete requests
+	router.HandleFunc("/data/{id:[0-9]+}", updateData).Methods("PUT") //Setup data the REST API and call UpdateData for delete requests
+	router.HandleFunc("/data/{id:[0-9]+}", deleteData).Methods("DELETE") //Setup data the REST API and call DeleteData for delete requests
+
+	//Start listening for requests - thread waits forever at this port
+	log.Fatal(http.ListenAndServe(":" + port, router))
+}
+
+//Set headers to tell the client what is supported for this REST API
+func setHeaders(writer http.ResponseWriter) {
+	writer.Header().Add("Access-Control-Allow-Origin", "*") //Allow access from anywhere
+	writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Request-Origin") //Allows setting of the Content-Type by the client
+	writer.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, OPTIONS") //REST API supports GET, POST, PUT, DELETE
+	writer.Header().Add("Accept", "application/json") //Only json is accepted
+	writer.Header().Add("Content-Type", "application/json")
+}
+
+//Called before other REST requests to make sure all the headers are correctly set
+//As well as set up security headers
+func options(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("options")
+	setHeaders( writer )
 }
 
 //Get the data from mongo
-func GetData(writer http.ResponseWriter, request *http.Request) {
-
-	writer.Header().Add("Access-Control-Allow-Origin", "*") //allow access from anywhere
-	writer.Header().Add("Access-Control-Allow-Methods", "GET")
-	writer.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-	writer.Header().Add("Content-Type", "application/json")
-
-	fmt.Println( "Path:", request.URL.Path )
-	data := loadData()
-	json.NewEncoder(writer).Encode(data)
+func getData(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("getData:", request.URL.Path)
+	setHeaders( writer ) //Set response headers
+	data := loadData(mongoDB) //load the data
+	json.NewEncoder(writer).Encode(data) //stream the encoded data on the writer
 }
 
-func DeleteData(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println( "Deleting" )
+func createData(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("createData:", request.URL.Path)
+	setHeaders( writer ) //Set response headers
 }
 
+func updateData(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("updateData:", request.URL.Path)
+	setHeaders( writer ) //Set response headers
+}
+
+func deleteData(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+	fmt.Printf("deleteData(%s):%s\n", params["id"], request.URL.Path)
+	setHeaders( writer ) //Set response headers
+
+}
 
 
 //Load data from mongo
-func loadData( ) []TestData {
-
-	//todo pass in
-	databaseName := "dev"
-	collectionName := "test"
+func loadData( databaseConnectionInfo MongoDB ) []TestData {
 
 	//set connection to mongo
-	//todo pass in
 	dialInfo := &mgo.DialInfo{
-		Addrs: []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"},
-		Database: "admin",
-		Username: "dev",
-		Password: "dev",
+		Addrs: databaseConnectionInfo.cluster,
+		Database: databaseConnectionInfo.userDatabase,
+		Username: databaseConnectionInfo.username,
+		Password: databaseConnectionInfo.password,
 	}
 
-	fmt.Println( "Opening connection to", dialInfo.Addrs, "as", dialInfo.Username, "from the", dialInfo.Database, "DB." )
-	fmt.Println( "Start loading data" )
+	fmt.Println("Opening connection to", dialInfo.Addrs, "as", dialInfo.Username, "from the", dialInfo.Database, "DB.")
+	fmt.Println("Start loading data")
 
 	//todo figure out what this is
 	tlsConfig := &tls.Config{}
@@ -77,91 +128,42 @@ func loadData( ) []TestData {
 	}
 
 	//Create the session
-	fmt.Println( "Creating session" )
+	fmt.Println("Creating session")
 	session, err := mgo.DialWithInfo(dialInfo)
-	if err != nil { panic(err) } //fail in null
+	if err != nil {
+		panic(err)
+	} //fail in null
 
 	//Get the mongo db from the session
-	fmt.Println( "Opening DB", databaseName, "using session", session )
-	database := session.DB(databaseName)
-	if database == nil { panic(database) }
+	fmt.Println("Opening DB", databaseConnectionInfo.databaseName, "using session", session)
+	database := session.DB(databaseConnectionInfo.databaseName)
+	if database == nil {
+		panic(database)
+	}
 
 	//Get the collection
-	collection := database.C( collectionName )
-	if collection == nil {	panic(collection) }
+	collection := database.C(databaseConnectionInfo.collectionName)
+	if collection == nil {
+		panic(collection)
+	}
 
 	//Load data
-	query := collection.Find( bson.M{} )
-	query = query.Sort( "value" )
-	if err != nil {panic( err)	}
+	query := collection.Find(bson.M{})
+	query = query.Sort("value")
+	if err != nil {
+		panic(err)
+	}
 
 	//
 	//fmt.Println( "Count:", count)
 	results := []TestData{}
-	query.All( &results )
+	query.All(&results)
 	for index, result := range results {
-		fmt.Println( index, "id:", result.Id )
-		fmt.Println( "value:", result.Value )
+		fmt.Println(index, "id:", result.Id)
+		fmt.Println("value:", result.Value)
 	}
 
-	fmt.Println( "Finished loading data" )
+	fmt.Println("Finished loading data")
 
 	return results
 }
-
-//org test
-func test() {
-	fmt.Println( "Start" )
-	tlsConfig := &tls.Config{}
-
-	//
-	dialInfo := &mgo.DialInfo{
-		Addrs: []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"},
-		Database: "admin",
-		Username: "dev",
-		Password: "dev",
-	}
-
-	//
-	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-		conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
-		return conn, err
-	}
-	session, err := mgo.DialWithInfo(dialInfo)
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println( "session:", session )
-	database := session.DB("dev")
-
-	names, err := database.CollectionNames()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, name := range names {
-		// index is the index where we are
-		// element is the element from someSlice for where we are
-		fmt.Println( "Getting Collec  tion Name:", name )
-		collection := database.C( name )
-		fmt.Println( "Got:", collection.Name )
-		query := collection.Find( bson.M{} )
-		count, err := query.Count()
-		if err != nil {
-			panic( err)
-		}
-
-		fmt.Println( "Count:", count)
-		results := []TestData{}
-		query.All( &results )
-		for id, result := range results {
-			fmt.Println( id, "id:", result.Id )
-			fmt.Println( "value:", result.Value )
-		}
-	}
-
-	fmt.Println( "End" )
-}
-
