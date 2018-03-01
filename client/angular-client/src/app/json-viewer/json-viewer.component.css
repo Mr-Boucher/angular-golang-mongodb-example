@@ -1,7 +1,17 @@
 .error {color: red;}
 
-.data {
-  color: darkred;
+.data_button {
+  color: black;
   background-color: lightblue;
   font-weight: bold;
+  border:  1px solid darkblue;
+  box-shadow: 5px 10px darkgrey;
+}
+
+.data_view {
+  background-color: pink;
+  border: solid darkred;
+  box-shadow: 5px 10px darkgrey;
+  font-weight: bold;
+  color-rendering: round;
 }

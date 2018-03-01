@@ -5,6 +5,7 @@ import {Subject} from "rxjs/Subject";
 
 
 export interface Data {
+  id: string;
   value: string;
 }
 
@@ -21,7 +22,9 @@ const httpOptions = {
 export class JsonViewerService {
 
   // courseUrl = "https://angular-http-guide.firebaseio.com/courses.json";
-  courseUrl = "http://localhost:8000/loaddata";
+  host = "http://localhost:8000/";
+  getDataUrl = "loaddata";
+  deleteDataUrl = "deletedata";
 
   subject: Subject<Data[]> = new Subject();
   _data: Data[] = [];
@@ -36,8 +39,18 @@ export class JsonViewerService {
 
   updateData() {
     console.log( "updateData" );
-    this.httpClient.get<Data[]>(this.courseUrl, httpOptions).subscribe(data => {
+    this.httpClient.get<Data[]>(this.host + this.getDataUrl, httpOptions).subscribe(data => {
       this._data = <Data[]>data; // save your data
+      this.subject.next(this._data); // emit your data
+    });
+  }
+
+  removeData(id: string) {
+    console.log( "removing: " + id );
+    this.httpClient.delete( this.host + this.deleteDataUrl ).subscribe( data=>{
+      for ( let index = 0; index < this._data.length; index++ ) {
+        this._data.splice(index, 1); //remove 1 item
+      }
       this.subject.next(this._data); // emit your data
     });
   }

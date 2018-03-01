@@ -32,4 +32,8 @@ export class JsonViewerComponent implements OnInit {
   refresh($event) {
     this._jsonViewerService.updateData();
   }
+
+  remove( id: string, $event ) {
+    this._jsonViewerService.removeData( id );
+  }
 }

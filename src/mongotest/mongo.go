@@ -14,9 +14,9 @@ import (
 )
 
 type TestData struct {
-	Id         bson.ObjectId   `bson:"_id,omitempty" json:"-"`
+	ObjectId   bson.ObjectId   `bson:"_id,omitempty" json:"-"`
 	Value      string   `bson:"value" json:"value"`
-
+	Id         string   `bson:"id" json:"id"`
 }
 
 //Kick it all off
@@ -25,6 +25,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", GetData).Methods("GET")
 	router.HandleFunc("/loaddata", GetData).Methods("GET", "OPTIONS")//.Headers("Content-Type", "application/json")
+	router.HandleFunc("/deletedata/{id}", DeleteData).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
@@ -40,6 +41,12 @@ func GetData(writer http.ResponseWriter, request *http.Request) {
 	data := loadData()
 	json.NewEncoder(writer).Encode(data)
 }
+
+func DeleteData(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println( "Deleting" )
+}
+
+
 
 //Load data from mongo
 func loadData( ) []TestData {
@@ -92,8 +99,8 @@ func loadData( ) []TestData {
 	//fmt.Println( "Count:", count)
 	results := []TestData{}
 	query.All( &results )
-	for id, result := range results {
-		fmt.Println( id, "id:", result.Id )
+	for index, result := range results {
+		fmt.Println( index, "id:", result.Id )
 		fmt.Println( "value:", result.Value )
 	}
 

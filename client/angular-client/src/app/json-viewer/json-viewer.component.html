@@ -1,16 +1,21 @@
 <div>
-  <h2><button (click)="refresh()">Data</button>:</h2>
-  <ul *ngIf="(courses ) else noData">
-    <li *ngFor="let course of courses">
-      <div class="data">{{course.value}}</div>
-    </li>
-  </ul>
-  <ng-template #noData>No Data Available</ng-template>
+  <div class="data_view">
+    <h2>
+      <button class="data_button" (click)="refresh()">Refresh</button>:
+    </h2>
+    <ul *ngIf="(courses ) else noData">
+      <li *ngFor="let course of courses">
+        <button class="data_button" (click)="remove( course.id )">Delete</button>
+        <span>{{course.value}} - {{course.id}}</span>
+      </li>
+    </ul>
+    <ng-template #noData>No Data Available</ng-template>
+  </div>
 </div>
 <div *ngIf="error">
   <h2>Errors: </h2>
   <p>
-    {{error}}
+  {{error}}
   </p>
 
 </div>
