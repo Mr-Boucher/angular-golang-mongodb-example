@@ -4,9 +4,9 @@ import "rxjs/add/operator/map";
 import {Subject} from "rxjs/Subject";
 
 
-export interface Data {
-  id: string;
-  value: string;
+export class Data {
+  id: String;
+  value: String;
 }
 
 const httpOptions = {
@@ -46,12 +46,16 @@ export class JsonViewerService {
   }
 
   //
-  add(data: Data) {
-    console.log( "adding data: " + data)
-    this.httpClient.post(this.host + this.objectUrl, JSON.stringify(data) ,httpOptions).subscribe(data => {
+  add(value: String) {
+    let newData = new Data();
+    newData.value = value;
+    console.log( "adding data: " + newData);
+    let json = JSON.stringify(newData);
+    console.log( "adding data: " + json);
+    this.httpClient.post(this.host + this.objectUrl, json, httpOptions).subscribe(data => {
       //this.data
-      //this._data = <Data[]>data; // save your data
-      //this.subject.next(this._data); // emit your data
+      this._data.push( data ) // save your data
+      this.subject.next(this._data); // emit your data
       console.log( "added data: " + data)
     });
   }

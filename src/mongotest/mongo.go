@@ -95,16 +95,19 @@ func getData(writer http.ResponseWriter, request *http.Request) {
 func createData(writer http.ResponseWriter, request *http.Request) {
 	// Read body
 	body, err := ioutil.ReadAll(request.Body)
-	defer request.Body.Close()
+	defer request.Body.Close() //make sure we clean up the steam
 	if err != nil {
 		http.Error(writer, err.Error(), 500)
+		fmt.Println(err)
 		return
 	}
 
 	var newData TestData
+	fmt.Println( body )
 	err = json.Unmarshal(body, &newData)
 	if err != nil {
 		http.Error(writer, err.Error(), 500)
+		fmt.Println(err)
 		return
 	}
 
@@ -113,7 +116,9 @@ func createData(writer http.ResponseWriter, request *http.Request) {
 	setHeaders(writer) //Set response headers
 
 	newData.Id = xid.New().String()
-	execute(mongoDB, create, newData )
+	result := execute(mongoDB, create, newData )
+	byteData, err := json.Marshal( result )
+	writer.Write( byteData )
 }
 
 //
@@ -175,7 +180,7 @@ func create(collection *mgo.Collection, argument actionArgument) actionResults {
 	if err != nil {
 		panic( err )
 	}
-	fmt.Println("create:", "finished")
+	fmt.Println("create:", "finished", newData)
 	return newData
 }
 

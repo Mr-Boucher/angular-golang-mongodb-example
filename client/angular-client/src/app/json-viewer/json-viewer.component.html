@@ -14,7 +14,7 @@
     <ul *ngIf="(data) else noData">
       <li *ngFor="let item of data">
         <button class="data_button" (click)="remove( item.id )">Delete</button>
-        <span class="value">{{item.value}} - {{item.id}}</span>
+        <span class="value">{{item.value}}</span>
       </li>
     </ul>
     <ng-template #noData>No Data Available</ng-template>
