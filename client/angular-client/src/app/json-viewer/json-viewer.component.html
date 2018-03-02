@@ -1,12 +1,20 @@
 <div>
+  <div class="data_add">
+    <form class="add" (ngSubmit)="add()">
+      <button type="submit" class="data_button">Add</button>:
+      <label for="text_input">Text</label>
+      <input id="text_input" type="text" class="text_input" required name="name">
+    </form>
+  </div>
+  <div class="data_space"></div>
   <div class="data_view">
     <h2>
       <button class="data_button" (click)="refresh()">Refresh</button>:
     </h2>
-    <ul *ngIf="(courses ) else noData">
-      <li *ngFor="let course of courses">
-        <button class="data_button" (click)="remove( course.id )">Delete</button>
-        <span class="value">{{course.value}} - {{course.id}}</span>
+    <ul *ngIf="(data) else noData">
+      <li *ngFor="let item of data">
+        <button class="data_button" (click)="remove( item.id )">Delete</button>
+        <span class="value">{{item.value}} - {{item.id}}</span>
       </li>
     </ul>
     <ng-template #noData>No Data Available</ng-template>

@@ -16,6 +16,22 @@
   color-rendering: round;
 }
 
+.data_add {
+  background-color: pink;
+  border: solid darkred;
+  box-shadow: 5px 10px darkgrey;
+  font-weight: bold;
+  color-rendering: round;
+}
+
+.data_space {
+  margin-bottom: 40px;
+}
+
+.text_input {
+  margin: 3px;
+}
+
 .value {
 
 }

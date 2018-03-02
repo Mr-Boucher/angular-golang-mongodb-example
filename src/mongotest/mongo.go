@@ -105,19 +105,19 @@ func updateData(writer http.ResponseWriter, request *http.Request) {
 
 //
 func deleteData(writer http.ResponseWriter, request *http.Request) {
-	params := mux.Vars(request)
-	id := params["id"]
+	params := mux.Vars(request) //retrieve the query params from the url
+	id := params["id"] //get the id of the object to delete
 	fmt.Printf("deleteData(%s):%s\n", id, request.URL.Path)
 	setHeaders(writer) //Set response headers
 
 	//perform the deleteDataById
-	//args: actionArguments = id
-	execute(mongoDB, deleteById, nil)
+	//args: actionArgument = id
+	execute(mongoDB, deleteById, id)
 }
 
 ////////////////////////////////////////ACTION FUNCTIONS/////////////////////////////////////////////////////////////////////////
-//Load data from mongo
-func load(collection *mgo.Collection, arguments actionArguments) []TestData {
+//Load data from mongo returned as a []TestData
+func load(collection *mgo.Collection, argument actionArgument) actionResults {
 
 	//Load data
 	query := collection.Find(bson.M{})
@@ -136,16 +136,31 @@ func load(collection *mgo.Collection, arguments actionArguments) []TestData {
 }
 
 //remove data from db base
-func create(collection *mgo.Collection, arguments actionArguments) []TestData {
+func create(collection *mgo.Collection, argument actionArgument) actionResults {
 
+	//Validation handling
+	if argument == nil {
+		panic( "Missing argument of type TestData" )
+	}
+
+	//Convert the empty interface to a string that contains the id
+	newData, ok := argument.(TestData) //same as casting in java
+	if !ok {
+		panic( "Argument should be of type TestData" )
+	}
+
+	//Insert the TestData
 	fmt.Println("create:", "started")
-	//collection.Remove( bson.M{"id": id} )
+	err := collection.Insert( newData )
+	if err != nil {
+		panic( err )
+	}
 	fmt.Println("create:", "finished")
 	return nil
 }
 
 //remove data from db base
-func update(collection *mgo.Collection, arguments actionArguments) []TestData {
+func update(collection *mgo.Collection, argument actionArgument) actionResults {
 
 	fmt.Println("update:", "started")
 	//collection.Remove( bson.M{"id": id} )
@@ -154,32 +169,36 @@ func update(collection *mgo.Collection, arguments actionArguments) []TestData {
 }
 
 //remove data from db base
-func deleteById(collection *mgo.Collection, arguments actionArguments) []TestData {
+func deleteById(collection *mgo.Collection, argument actionArgument) actionResults {
 
-	if arguments == nil {
-		panic( "Missing arguments" )
+	//Validation handling
+	if argument == nil {
+		panic( "Missing argument of type string" )
 	}
 
-	id := arguments.getId
-	if id == nil {
-		panic( "Arguments missing id" )
+	//Convert the empty interface to a string that contains the id
+	id, ok := argument.(string)
+	if !ok {
+		panic( "Argument should be of type string" )
 	}
 
 	fmt.Println("deleteById:", id, "started")
-	//collection.Remove( bson.M{"id": id} )
+	err := collection.Remove( bson.M{"id": id} )
+	if err != nil {
+		panic( err )
+	}
 	fmt.Println("deleteById:", id, "finished")
 	return nil
 }
 
 ////////////////////////////////////////FRAMEWORK/////////////////////////////////////////////////////////////////////////
-//arguments for different actions
-type actionArguments interface {
-	getId() string
-}
+
+type actionArgument interface {} //arguments for different actions
+type actionResults interface {}  //results from different actions
 
 //Method handling framework calls to mongoDB this method will create and destroy all resources needed
 //to work with mongoDB it will perform the action function and return the results
-func execute(databaseConnectionInfo MongoDB, action func(collection *mgo.Collection, args actionArguments) []TestData, arguments actionArguments) []TestData {
+func execute(databaseConnectionInfo MongoDB, action func(collection *mgo.Collection, arguments actionArgument) actionResults, arguments actionArgument) actionResults {
 
 	//set connection to mongo
 	dialInfo := &mgo.DialInfo{
@@ -190,26 +209,24 @@ func execute(databaseConnectionInfo MongoDB, action func(collection *mgo.Collect
 	}
 
 	fmt.Println("Opening connection to", dialInfo.Addrs, "as", dialInfo.Username, "from the", dialInfo.Database, "DB.")
-	fmt.Println("Start loading data")
-
-	//todo figure out what this is
-	tlsConfig := &tls.Config{}
 
 	//call the mongo server
+	tlsConfig := &tls.Config{} //todo figure out what this is
 	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
 		conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
 		return conn, err
 	}
 
 	//Create the session
-	fmt.Println("Creating session")
+	fmt.Println("Creating session:")
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Created session:", session)
 
 	//If we have a valid session make sure it is closed once the method exits otherwise it will be a session leak
-	defer session.Close();
+	defer cleanUp( session )
 
 	//Get the mongo db from the session
 	fmt.Println("Opening DB", databaseConnectionInfo.databaseName, "using session", session)
@@ -228,4 +245,10 @@ func execute(databaseConnectionInfo MongoDB, action func(collection *mgo.Collect
 	result := action(collection, arguments)
 
 	return result;
+}
+
+//Make sure the resources are cleaned up
+func cleanUp(session *mgo.Session) {
+	fmt.Println( "Closing session:", session)
+	session.Close()
 }

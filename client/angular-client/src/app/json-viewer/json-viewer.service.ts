@@ -33,12 +33,12 @@ export class JsonViewerService {
   }
 
   constructor(private httpClient:HttpClient) {
-    this.updateData()
+    this.load()
   }
 
   //
-  updateData() {
-    console.log("retrieveData");
+  load() {
+    console.log("load data");
     this.httpClient.get<Data[]>(this.host + this.objectUrl, httpOptions).subscribe(data => {
       this._data = <Data[]>data; // save your data
       this.subject.next(this._data); // emit your data
@@ -46,8 +46,13 @@ export class JsonViewerService {
   }
 
   //
-  removeData(id:string) {
-    console.log("deleting: " + id);
+  add(data: Data) {
+    console.log( "add data" + data)
+  }
+
+  //
+  remove(id:string) {
+    console.log("deleting data(" + id + ")");
     this.httpClient.delete(this.host + this.deleteUrl + id, httpOptions).subscribe(data=> {
       for (let index = 0; index < this._data.length; index++) {
         if( this._data[index].id == id ) {

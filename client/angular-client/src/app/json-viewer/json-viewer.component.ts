@@ -11,7 +11,7 @@ import {Data, JsonViewerService} from "./json-viewer.service";
 export class JsonViewerComponent implements OnInit {
 
   json: any;
-  courses: Data[];
+  data: Data[];
   error: any;
 
   constructor(private _jsonViewerService: JsonViewerService) {
@@ -21,7 +21,7 @@ export class JsonViewerComponent implements OnInit {
     console.log( "ngOnInit" );
     this._jsonViewerService.data.subscribe(
       data => {
-        this.courses = data;
+        this.data = data;
         console.log("subscribe result")
       },
       err => console.error(err),
@@ -30,10 +30,14 @@ export class JsonViewerComponent implements OnInit {
   }
 
   refresh($event) {
-    this._jsonViewerService.updateData();
+    this._jsonViewerService.load();
+  }
+
+  add( data, $event ) {
+    this._jsonViewerService.add( data )
   }
 
   remove( id: string, $event ) {
-    this._jsonViewerService.removeData( id );
+    this._jsonViewerService.remove( id );
   }
 }
