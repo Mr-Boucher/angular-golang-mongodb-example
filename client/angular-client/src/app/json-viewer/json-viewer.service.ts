@@ -47,7 +47,13 @@ export class JsonViewerService {
 
   //
   add(data: Data) {
-    console.log( "add data" + data)
+    console.log( "adding data: " + data)
+    this.httpClient.post(this.host + this.objectUrl, JSON.stringify(data) ,httpOptions).subscribe(data => {
+      //this.data
+      //this._data = <Data[]>data; // save your data
+      //this.subject.next(this._data); // emit your data
+      console.log( "added data: " + data)
+    });
   }
 
   //

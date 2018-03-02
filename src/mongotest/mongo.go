@@ -12,6 +12,8 @@ import (
 	"encoding/json"
 	"strings"
 	"os"
+	"io/ioutil"
+	"github.com/rs/xid"
 )
 
 //Test data format
@@ -51,12 +53,12 @@ func main() {
 	//Setup route for incoming data requests
 	router := mux.NewRouter()
 	router.HandleFunc("/data", options).Methods("OPTIONS")             //Setup data the REST API and call options
-	router.HandleFunc("/data/{id:[0-9]+}", options).Methods("OPTIONS") //Setup data the REST API and options
+	router.HandleFunc("/data/{id:[a-z0-9]+}", options).Methods("OPTIONS") //Setup data the REST API and options
 
 	router.HandleFunc("/data", getData).Methods("GET")                   //Setup data as the REST API and call GetData for get requests
 	router.HandleFunc("/data", createData).Methods("POST")               //Setup data the REST API and call CreateData for delete requests
-	router.HandleFunc("/data/{id:[0-9]+}", updateData).Methods("PUT")    //Setup data the REST API and call UpdateData for delete requests
-	router.HandleFunc("/data/{id:[0-9]+}", deleteData).Methods("DELETE") //Setup data the REST API and call DeleteData for delete requests
+	router.HandleFunc("/data/{id:[a-z0-9]+}", updateData).Methods("PUT")    //Setup data the REST API and call UpdateData for delete requests
+	router.HandleFunc("/data/{id:[a-z0-9]+}", deleteData).Methods("DELETE") //Setup data the REST API and call DeleteData for delete requests
 
 	//Start listening for requests - thread waits forever at this port
 	log.Fatal(http.ListenAndServe(":"+port, router))
@@ -91,9 +93,27 @@ func getData(writer http.ResponseWriter, request *http.Request) {
 
 //
 func createData(writer http.ResponseWriter, request *http.Request) {
+	// Read body
+	body, err := ioutil.ReadAll(request.Body)
+	defer request.Body.Close()
+	if err != nil {
+		http.Error(writer, err.Error(), 500)
+		return
+	}
+
+	var newData TestData
+	err = json.Unmarshal(body, &newData)
+	if err != nil {
+		http.Error(writer, err.Error(), 500)
+		return
+	}
+
+
 	fmt.Println("createData:", request.URL.Path)
 	setHeaders(writer) //Set response headers
-	execute(mongoDB, create, nil)
+
+	newData.Id = xid.New().String()
+	execute(mongoDB, create, newData )
 }
 
 //
@@ -156,7 +176,7 @@ func create(collection *mgo.Collection, argument actionArgument) actionResults {
 		panic( err )
 	}
 	fmt.Println("create:", "finished")
-	return nil
+	return newData
 }
 
 //remove data from db base

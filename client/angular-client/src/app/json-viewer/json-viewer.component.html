@@ -1,10 +1,10 @@
 <div>
   <div class="data_add">
-    <form class="add" (ngSubmit)="add()">
-      <button type="submit" class="data_button">Add</button>:
+    <!--<form class="add" [ngFormOptions]="{ updateOn: 'submit' }">-->
+      <button type="submit" class="data_button" (click)="add(text_input.value)">Add</button>:
       <label for="text_input">Text</label>
-      <input id="text_input" type="text" class="text_input" required name="name">
-    </form>
+      <input #text_input id="text_input" >
+    <!--</form>-->
   </div>
   <div class="data_space"></div>
   <div class="data_view">
