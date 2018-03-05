@@ -19,7 +19,7 @@ const httpOptions = {
 };
 
 @Injectable()
-export class JsonViewerService {
+export class DataEditorService {
 
   host = "http://localhost:8000/";
   objectUrl = "data";
@@ -51,10 +51,10 @@ export class JsonViewerService {
     newData.value = value;
     console.log( "adding data: " + newData);
     let json = JSON.stringify(newData);
-    console.log( "adding data: " + json);
-    this.httpClient.post(this.host + this.objectUrl, json, httpOptions).subscribe(data => {
+    console.log( "adding data: " + json );
+    this.httpClient.post<Data>(this.host + this.objectUrl, json, httpOptions).subscribe(data => {
       //this.data
-      this._data.push( data ) // save your data
+      this._data.push( data ); // save your data
       this.subject.next(this._data); // emit your data
       console.log( "added data: " + data)
     });

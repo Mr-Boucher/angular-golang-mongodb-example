@@ -1,10 +1,10 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-</div>
-<app-json-viewer></app-json-viewer>
+
+<h1>{{ title }}</h1>
+<nav><a routerLink="/data-editor">Editor</a></nav>
+<nav><a routerLink="/configuration">Configuration</a></nav>
+<router-outlet></router-outlet>
+
 
 
 

@@ -1,15 +1,13 @@
 <div>
   <div class="data_add">
-    <!--<form class="add" [ngFormOptions]="{ updateOn: 'submit' }">-->
-      <button type="submit" class="data_button" (click)="add(text_input.value)">Add</button>:
-      <label for="text_input">Text</label>
-      <input #text_input id="text_input" >
-    <!--</form>-->
+    <button type="submit" class="data_button" (click)="add(text_input.value)">Add</button>
+    <label for="text_input">Text</label>
+    <input #text_input id="text_input">
   </div>
   <div class="data_space"></div>
   <div class="data_view">
     <h2>
-      <button class="data_button" (click)="refresh()">Refresh</button>:
+      <button class="data_button" (click)="refresh()">Load</button>
     </h2>
     <ul *ngIf="(data) else noData">
       <li *ngFor="let item of data">
@@ -23,7 +21,7 @@
 <div *ngIf="error">
   <h2>Errors: </h2>
   <p>
-  {{error}}
+    {{error}}
   </p>
 
 </div>

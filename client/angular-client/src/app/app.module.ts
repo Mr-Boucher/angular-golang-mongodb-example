@@ -5,18 +5,22 @@ import { FormsModule } from '@angular/forms';
 
 
 import { AppComponent } from './app.component';
-import { JsonViewerComponent } from './json-viewer/json-viewer.component';
+import { DataEditorComponent } from './data-editor-viewer/data-editor.component';
+import { ConfigurationComponent } from './configuration/configuration.component';
+import { AppRoutingModule } from './app-routing.module';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    JsonViewerComponent
+    DataEditorComponent,
+    ConfigurationComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]
