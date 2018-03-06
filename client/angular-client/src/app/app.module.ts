@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { DataEditorComponent } from './data-editor/data-editor.component';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { AppRoutingModule } from './app-routing.module';
+import {HttpService} from "./http.service";
 
 
 @NgModule({
@@ -20,9 +21,9 @@ import { AppRoutingModule } from './app-routing.module';
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
-  providers: [],
+  providers: [HttpService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

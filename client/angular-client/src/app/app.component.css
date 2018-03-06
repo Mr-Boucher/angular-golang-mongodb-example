@@ -1,3 +1,15 @@
 body {
   background-color: pink;
 }
+
+.link {
+  border: blue solid 2px;
+}
+
+.title {
+  text-align: center;
+}
+
+.dashboard {
+  padding-bottom: 10px;
+}

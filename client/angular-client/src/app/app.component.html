@@ -1,10 +1,12 @@
 <!--The content below is only a placeholder and can be replaced.-->
 
-<h1>{{ title }}</h1>
-<nav>
-  <a routerLink="/data-editor">Editor</a>
-  <a routerLink="/configuration">Configuration</a>
-</nav>
+<div class="dashboard">
+  <h1 class="title">{{ title }}</h1>
+  <nav class="nav-bar">
+    <a routerLink="/data-editor" class="link">Editor</a>
+    <a routerLink="/configuration" class="link">Configuration</a>
+  </nav>
+</div>
 <router-outlet></router-outlet>
 
 
