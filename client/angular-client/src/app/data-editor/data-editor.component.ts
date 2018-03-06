@@ -10,9 +10,7 @@ import {Data, DataEditorService} from "./data-editor.service";
 })
 export class DataEditorComponent implements OnInit {
 
-  json: any;
   data: Data[];
-  error: any;
 
   constructor(private _dataEditorService: DataEditorService) {
   }
@@ -29,15 +27,15 @@ export class DataEditorComponent implements OnInit {
     );
   }
 
-  refresh($event) {
+  refresh($event):void {
     this._dataEditorService.load();
   }
 
-  add( data, $event ) {
+  add( data, $event ):void {
     this._dataEditorService.add( data )
   }
 
-  remove( id: string, $event ) {
+  remove( id: string, $event ):void {
     this._dataEditorService.remove( id );
   }
 }

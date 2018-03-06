@@ -67,6 +67,27 @@ export class HttpService {
   }
 
   /**
+   * Update the object by Id
+   *
+   * @param object
+   * @param objectUrl
+   * @param subject
+   * @param dataArray
+     */
+  update(object:any, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+    this.httpClient.put(this.host + objectUrl + object.id, httpOptions).subscribe(data=> {
+
+      //loop to find the item by id
+      for (let index = 0; index < dataArray.length; index++) {
+        if (dataArray[index].id == object.id) {
+          dataArray[index].update( data );
+          subject.next(dataArray); //Emit to the observer the updated list of objects
+        }
+      }
+    });
+  }
+
+  /**
    *
    * @param id
    * @param objectUrl
