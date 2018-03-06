@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {DataEditorComponent} from "./data-editor-viewer/data-editor.component";
+import {DataEditorComponent} from "./data-editor/data-editor.component";
 import {ConfigurationComponent} from "./configuration/configuration.component";
 
 @Component({

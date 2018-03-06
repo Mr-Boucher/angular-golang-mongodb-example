@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 
 import { AppComponent } from './app.component';
-import { DataEditorComponent } from './data-editor-viewer/data-editor.component';
+import { DataEditorComponent } from './data-editor/data-editor.component';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { AppRoutingModule } from './app-routing.module';
 
