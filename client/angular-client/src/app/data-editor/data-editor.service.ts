@@ -36,22 +36,16 @@ export class DataEditorService {
 
   //
   add(value: String) {
+
+    //create the data object
     let newData = new Data();
-    newData.value = value;
+    newData.value = value; //only set the value because the Id is created on the server
     this.httpService.add( newData, this.objectUrl, this.subject, this._data );
   }
 
   //
   remove(id:string) {
-    // console.log("deleting data(" + id + ")");
-    // this.httpClient.delete(this.host + this.deleteUrl + id, httpOptions).subscribe(data=> {
-    //   for (let index = 0; index < this._data.length; index++) {
-    //     if( this._data[index].id == id ) {
-    //       this._data.splice(index, 1); //remove 1 item
-    //       this.subject.next(this._data); // emit your data
-    //     }
-    //   }
-    // });
+    this.httpService.remove( id, this.deleteUrl, this.subject, this._data );
   }
 }
 

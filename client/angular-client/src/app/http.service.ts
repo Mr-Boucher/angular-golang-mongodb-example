@@ -14,40 +14,76 @@ const httpOptions = {
 };
 
 /**
- *
+ * Class for handling the configuration and communication with the REST API Server
  */
 @Injectable()
 export class HttpService {
 
   host = "http://localhost:8000/";
 
-  constructor(private httpClient:HttpClient) { }
+  constructor(private httpClient:HttpClient) {
+  }
 
-  //Call the REST API, add the data to the array and update the subject
-  load( objectUrl:String, subject: Subject<any>, dataArray:any[] ) {
+  /**
+   * Call the REST API, add the data to the array and update the subject
+   *
+   * @param objectUrl
+   * @param subject
+   * @param dataArray
+   */
+  load(objectUrl:String, subject:Subject<any>, dataArray:any[]) {
     this.httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
-      console.log( "Received " + data );
-      // dataArray.splice(0, dataArray.length -1);
-      dataArray.concat( data );
-      // data.forEach(function (value) {
-      //   console.log(value);
-      //   dataArray.concat();
-      // });
+      console.log("Received " + data);
+      dataArray.splice(0, dataArray.length); //empty the array so the ui does not show old values
 
+      //add the data[] elements to the dataArray
+      (<any[]>data).forEach(function (value) {
+        console.log(value);
+        dataArray.push(value);
+      });
+
+
+      //Emit the data to the subject so the data will refresh with the new value set
       subject.next(dataArray); // emit your data
     });
   }
 
-  //Add a new element to the array and update the server with the new data
-  add(object: any, objectUrl:String, subject: Subject<any>, dataArray:any[] ) {
-    console.log( "adding data: " + object);
-    let json = JSON.stringify(object);
-    console.log( "adding data: " + json );
+  /**
+   * Add a new element to the array and update the server with the new data
+   *
+   * @param object
+   * @param objectUrl
+   * @param subject
+   * @param dataArray
+   */
+  add(object:any, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+    console.log("adding data: " + object);
+    let json = JSON.stringify(object); //convert object to JSON
+
     this.httpClient.post<Data>(this.host + objectUrl, json, httpOptions).subscribe(data => {
-      console.log( dataArray);
-      dataArray.push( data ); // save your data
-      subject.next(dataArray); // emit your data
-      console.log( "added data: " + data + " to " + dataArray);
+      dataArray.push(data); //Add post server created object to the display array
+      subject.next(dataArray); //Emit to the observer the updated list of objects
+    });
+  }
+
+  /**
+   *
+   * @param id
+   * @param objectUrl
+   * @param subject
+   * @param dataArray
+   */
+  remove(id:string, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+    console.log("deleting data(" + id + ")");
+    this.httpClient.delete(this.host + objectUrl + id, httpOptions).subscribe(data=> {
+
+      //loop to find the item by id
+      for (let index = 0; index < dataArray.length; index++) {
+        if (dataArray[index].id == id) {
+          dataArray.splice(index, 1); //remove 1 item the item for the list
+          subject.next(dataArray); //Emit to the observer the updated list of objects
+        }
+      }
     });
   }
 }
