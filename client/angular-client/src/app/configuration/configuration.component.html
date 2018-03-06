@@ -1,3 +1,14 @@
-<p>
-  configuration works!
-</p>
+<div>
+  <div class="data_view">
+    <h2>
+      <button class="data_button" (click)="refresh()">Load</button>
+    </h2>
+    <ul *ngIf="(configurations) else noData">
+      <li *ngFor="let item of configurations">
+        <button class="data_button" (click)="update( item.id )">Update</button>
+        <span class="value">{{item.value}}</span>
+      </li>
+    </ul>
+    <ng-template #noData>No Data Available</ng-template>
+  </div>
+</div>
