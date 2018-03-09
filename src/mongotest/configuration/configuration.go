@@ -1,16 +1,30 @@
 package configuration
 
-type MongoDBConfiguration struct {
-	DatabaseName   string
-	CollectionName string
-	Cluster        []string
-	UserDatabase   string
-	Username       string
-	Password       string
-}
+import(
+ //"../httphandler"
+)
 
-//Should be a constant but can't because of language restriction that const can't have arrays
-var MongoDB = MongoDBConfiguration{"dev", "test", []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"}, "admin", "dev", "dev"}
+//const(
+//	baseUrl = "/data"
+//)
+//
+//type Configuration struct {
+//
+//}
 
+//
+//func initializeHTTPSupport( handler httphandler.HttpHandler ) {
+	//add /data route for GET and POST
+	//handler.Add( httphandler.HttpRouterHandler{baseUrl,
+	//	{ httphandler.HttpMethodFunction{"GET", getData},
+	//		httphandler.HttpMethodFunction{"POST", createData}},
+	//	options} )
+	//
+	////add /data/{id:[a-z0-9]+} for PUT and DELETE
+	//handler.Add( httphandler.HttpRouterHandler{baseUrl + "/{id:[a-z0-9]+}",
+	//	{ httphandler.HttpMethodFunction{"PUT", updateData},
+	//		httphandler.HttpMethodFunction{"DELETE", deleteById}},
+	//	options} )
+//}
 
 
