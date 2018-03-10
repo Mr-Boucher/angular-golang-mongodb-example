@@ -5,7 +5,7 @@ import (
 	"strings"
 	"os"
 	"./dataeditor"
-	"./manager"
+	"./applicationmanager"
 	"./httpmanager"
 	"./mongodbmanager"
 )
@@ -20,17 +20,17 @@ func main() {
 	fmt.Println(strings.Join(os.Args, " "))
 
 	//Create the manger that handles everything
-	manager := manager.Manager{}
+	manager := applicationmanager.Manager{}
 
 	//
 	manager.Initialize()
 
 	//Register business logic processors with the manager
-	manager.Register( dataeditor.DataEditor{}() )
+	manager.Register( &dataeditor.DataEditor{} )
 	//manager.Register( configuration.MongoDBConfiguration{}() )
 
 	//create the context
-	context := manager.ManagerContext{httpConnectionDefault, mongoDBDefault }
+	context := applicationmanager.ManagerContext{ httpConnectionDefault, mongoDBDefault }
 
 	//Kick everything off
 	manager.Start( context )

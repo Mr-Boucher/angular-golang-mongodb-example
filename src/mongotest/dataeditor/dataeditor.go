@@ -3,9 +3,7 @@ package dataeditor
 import (
 	"gopkg.in/mgo.v2/bson"
 	"fmt"
-	"gopkg.in/mgo.v2"
 	"../httpmanager"
-	"../manager"
 )
 
 const(
@@ -28,9 +26,8 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 	routers := []httpmanager.HttpRouterHandler{} //empty array for routers
 
 	//add /data route for GET and POST
-	append( routers, httpmanager.HttpRouterHandler{baseUrl,
-		{ httpmanager.HttpMethodFunction{"GET", getData},
-			httpmanager.HttpMethodFunction{"POST", createData}}} )
+	funcs := []httpmanager.HttpMethodFunction{{"GET", d.load}, {"POST", d.load} }
+	routers = append( routers, httpmanager.HttpRouterHandler{ baseUrl, funcs } )
 
 	////add /data/{id:[a-z0-9]+} for PUT and DELETE
 	//handler.Add( httphandler.HttpRouterHandler{baseUrl + "/{id:[a-z0-9]+}",
@@ -41,14 +38,9 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 }
 
 ////////////////////////////////////////REST API FUNCTIONS/////////////////////////////////////////////////////////////////////////
-//Get the data from mongo
-func getData(context processcontext.ExecutionContext) {
-
-	return manager.Execute(context, load, nil)
-}
 
 //
-func createData(context processcontext.ExecutionContext) {
+//func createData(context processcontext.ExecutionContext) {
 	//// Read body
 	//body, err := ioutil.ReadAll(request.Body)
 	//defer request.Body.Close() //make sure we clean up the steam
@@ -75,17 +67,17 @@ func createData(context processcontext.ExecutionContext) {
 	//result := execute(configuration.MongoDB, create, newData )
 	//byteData, err := json.Marshal( result )
 	//writer.Write( byteData )
-}
+//}
 
 //
-func updateData(context processcontext.ExecutionContext) {
+//func updateData(context processcontext.ExecutionContext) {
 	//fmt.Println("updateData:", request.URL.Path)
 	//setHeaders(writer) //Set response headers
 	//execute(configuration.MongoDB, update, nil)
-}
+//}
 
 //
-func deleteData(context processcontext.ExecutionContext) {
+//func deleteData(context processcontext.ExecutionContext) {
 	//params := mux.Vars(request) //retrieve the query params from the url
 	//id := params["id"] //get the id of the object to delete
 	//fmt.Printf("deleteData(%s):%s\n", id, request.URL.Path)
@@ -94,22 +86,26 @@ func deleteData(context processcontext.ExecutionContext) {
 	////perform the deleteDataById
 	////args: actionArgument = id
 	//execute(configuration.MongoDB, deleteById, id)
-}
+//}
 
 ////////////////////////////////////////ACTION FUNCTIONS/////////////////////////////////////////////////////////////////////////
 //Load data from mongo returned as a []TestData
-func load(collection *mgo.Collection, argument manager.ActionArgument) manager.ActionResults {
+//func load(collection *mgo.Collection, argument manager.ActionArgument) manager.ActionResults {
+func (d *DataEditor) load( ) interface{} {
 
-	//Load data
-	query := collection.Find(bson.M{})
-	query = query.Sort("value") //sort the data by its value
+	fmt.Println("dataeditor.load")
 	var results []TestData
-	query.All(&results) //execute the query
 
-	//Display the data returned for debugging
-	for index, result := range results {
-		fmt.Println(index, "id:", result.Id, "value:", result.Value)
-	}
+	////Load data
+	//query := collection.Find(bson.M{})
+	//query = query.Sort("value") //sort the data by its value
+	//
+	//query.All(&results) //execute the query
+	//
+	////Display the data returned for debugging
+	//for index, result := range results {
+	//	fmt.Println(index, "id:", result.Id, "value:", result.Value)
+	//}
 
 	fmt.Println("Finished loading data")
 

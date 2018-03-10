@@ -6,55 +6,8 @@ import (
 	"net/http"
 	"fmt"
 	"reflect"
-	"encoding/json"
-	"../configuration"
-	"strings"
+	"strconv"
 )
-
-//The manager
-type HttpManager struct {
-	router mux.Router
-  supported []NeedsHTTPSupport
-  routingMap map[string]HttpRouterHandler
-}
-
-
-//
-type HttpContext struct {
-	writer http.ResponseWriter
-	request *http.Request
-}
-
-//
-type HttpHandler interface {
-	Add(handler HttpRouterHandler)
-}
-
-//
-type NeedsHTTPSupport interface {
-	InitializeHTTPSupport()
-	GetURL() string
-	GetHTTPMethods() []string
-}
-
-
-//
-type HttpConnection struct {
-	port int
-}
-
-//
-type HttpMethodFunction struct {
-	httpMethod string
-	function   *func()
-}
-
-//
-type HttpRouterHandler struct {
-	URL             string
-	EndPointMethods []HttpMethodFunction
-	ActionFunction  *func( processcontext.ExecutionContext ) interface{}
-}
 
 //
 type Registrable interface {
@@ -62,97 +15,128 @@ type Registrable interface {
 }
 
 //
-func (m *HttpManager) Initialize() {
-	//
-	m.router = mux.NewRouter(); //create the underlying http router
-	m.supported = make([]NeedsHTTPSupport, 0); //create the empty default list of supported
-	m.routingMap = make(map[string]HttpRouterHandler); //create the empty default list of router handlers
+type RequestCallback interface {
+
 }
 
 //
-func (m *HttpManager) Register(registrable Registrable) {
-
-	//Loop through all the routes
-	for _, handler := range registrable.GetHttpRouterHandlers() {
-		if handler.URL == nil {
-			panic( "Route is nil" )
-		}
-
-		//make sure it is not already registered
-		if m.routingMap[handler.URL] != nil {
-			panic( "Route " + handler.URL + " is already defined" )
-		}
-
-		//Cache the handler for use in the execute when the request comes in
-		m.routingMap[handler.URL] = handler;
-
-		//Create endpoint methods for all handler endpoints
-		for _, endPoint := range handler.EndPointMethods {
-			m.router.HandleFunc(handler.URL, httpExecute).Methods( endPoint.function )
-		}
-	}
+type registered interface {
+	GetURL() string
+	GetHTTPMethods() []string
 }
 
 //
-func (m *HttpManager) Start(httpConnection HttpConnection, requestCallback func( http.ResponseWriter, *http.Request ) ) {
-
-	//initial all http supported object
-	for _, supportedItem := range m.supported {
-
-		//Create list of HTTPMethods for this endpoint
-		var temp []HttpMethodFunction
-		for _, httpMethod := range supportedItem.GetHTTPMethods() {
-			append( temp, HttpMethodFunction{httpMethod, requestCallback} )
-		}
-		Add(HttpRouterHandler{supportedItem.GetURL(), temp })
-		supportedItem.InitializeHTTPSupport()
-	}
-
-	//Setup route for incoming data requests
-
-	//router.HandleFunc("/data", options).Methods("OPTIONS")             //Setup data the REST API and call options
-	//router.HandleFunc("/data", getData).Methods("GET")                   //Setup data as the REST API and call GetData for get requests
-	//router.HandleFunc("/data", createData).Methods("POST")               //Setup data the REST API and call CreateData for delete requests
-
-	//router.HandleFunc("/data/{id:[a-z0-9]+}", options).Methods("OPTIONS") //Setup data the REST API and options
-	//router.HandleFunc("/data/{id:[a-z0-9]+}", updateData).Methods("PUT")    //Setup data the REST API and call UpdateData for delete requests
-	//router.HandleFunc("/data/{id:[a-z0-9]+}", deleteData).Methods("DELETE") //Setup data the REST API and call DeleteData for delete requests
-
-	//Start listening for requests - thread waits forever at this port
-	log.Fatal(http.ListenAndServe(":" + httpConnection.port, router))
+type HttpConnection struct {
+	Port int
 }
 
-//Set headers to tell the client what is supported for this REST API
-func setHeaders( context processcontext.ExecutionContext ) {
-	var methodsString = "OPTIONS, HEAD"
-	methodsString += strings.Join( context.HttpRouterHandler.EndPointMethods, ", ")
+//Created by
+type HttpRouterHandler struct {
+	URL             string
+	EndPointMethods []HttpMethodFunction
+}
 
-	context.HttpContext.writer.Header().Add("Access-Control-Allow-Origin", "*")                                            //Allow access from anywhere
-	context.HttpContext.writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Request-Origin") //Allows setting of the Content-Type by the client
-	context.HttpContext.writer.Header().Add("Access-Control-Allow-Methods", methodsString)       //REST API supports GET, POST, PUT, DELETE
-	context.HttpContext.writer.Header().Add("Accept", "application/json")                                                  //Only json is accepted
-	context.HttpContext.writer.Header().Add("Content-Type", "application/json")
+//
+type HttpMethodFunction struct {
+	HttpMethod string
+	Callback func( ) interface{}
+}
+
+//The manager
+type HttpManager struct {
+	RoutingMap map[string]HttpRouterHandler
+	router *mux.Router
+  registered []registered
+	callback func( HttpContext )
+}
+
+//
+type HttpContext struct {
+	Writer http.ResponseWriter
+	Request *http.Request
+	RouteHandler HttpRouterHandler
 }
 
 //This is the main algorithm for processing requests
-func httpExecute( writer http.ResponseWriter, request *http.Request ) {
-
+func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Request ) {
+	fmt.Println( "Executing" )
 	//Scrub the url if needed
 	fmt.Println( "Recieved Route URL" + request.URL.Path )
 	url := request.URL.Path
 
 	//Get HttpRouterHandler
-	routeHandler := routingMap[url]
-	if routeHandler == nil { panic( "No route handler for URL " + url ) }
+	routeHandler, ok := m.RoutingMap[url]
+	if !ok {
+		panic( "No route handler for URL " + url )
+	}
 
 	//Create the execution context
-	context := processcontext.ExecutionContext{configuration.MongoDB, HttpContext{writer, request}, routeHandler}
+	context := HttpContext{writer, request, routeHandler}
+	m.setHeaders( context )
+
 
 	//Call the action function requests
-	setHeaders( context )
-	if request.Method != "OPTIONS" {
-		fmt.Println("Executing", reflect.TypeOf(routeHandler.ActionFunction))
-		result := routeHandler.ActionFunction(context)
-		json.NewEncoder(writer).Encode(result) //stream the encoded data on the writer
+	if context.Request.Method != "OPTIONS" {
+		m.callback(context)
 	}
 }
+
+//
+func (m *HttpManager) Initialize( requestCallback func( HttpContext ) ) {
+	//
+	m.router = mux.NewRouter(); //create the underlying http router
+	m.registered = make([]registered, 0); //create the empty default list of supported
+	m.RoutingMap = make(map[string]HttpRouterHandler); //create the empty default list of router handlers
+	m.callback = requestCallback;
+}
+
+//
+func (m *HttpManager) Register(registrable Registrable) {
+
+	fmt.Println( "Registering: " + reflect.TypeOf(registrable).String())
+
+	//Loop through all the routes
+	for _, handler := range registrable.GetHttpRouterHandlers() {
+
+		fmt.Println( "Registering handler: " + reflect.TypeOf(handler).String())
+
+		//make sure it is not already registered
+		_, ok := m.RoutingMap[handler.URL]
+		if ok {
+			panic( "Route " + handler.URL + " is already defined" )
+		}
+
+		//Cache the handler for use in the execute when the request comes in
+		m.RoutingMap[handler.URL] = handler;
+
+		//Create endpoint methods for all handler endpoints
+		m.router.HandleFunc(handler.URL, m.httpExecute).Methods( "OPTIONS" ) //options must always be set for CORS to work
+		for _, endPoint := range handler.EndPointMethods {
+			fmt.Println( "Registering endpoint:", handler.URL, endPoint )
+			m.router.HandleFunc(handler.URL, m.httpExecute).Methods( endPoint.HttpMethod )
+		}
+	}
+}
+
+//
+func (m *HttpManager) Start( httpConnection HttpConnection  )  {
+
+	//Start listening for requests - thread waits forever at this port
+	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(httpConnection.Port), m.router))
+}
+
+//Set headers to tell the client what is supported for this REST API
+func (m *HttpManager) setHeaders( context HttpContext ) {
+	var methodsStrings = "OPTIONS, HEAD, "
+	for _, endpoint := range context.RouteHandler.EndPointMethods {
+		methodsStrings += endpoint.HttpMethod + ","
+	}
+
+	context.Writer.Header().Add("Access-Control-Allow-Origin", "*")                                            //Allow access from anywhere
+	context.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Request-Origin") //Allows setting of the Content-Type by the client
+	context.Writer.Header().Add("Access-Control-Allow-Methods", methodsStrings)       //REST API supports GET, POST, PUT, DELETE
+	context.Writer.Header().Add("Accept", "application/json")                                                  //Only json is accepted
+	context.Writer.Header().Add("Content-Type", "application/json")
+}
+
+
