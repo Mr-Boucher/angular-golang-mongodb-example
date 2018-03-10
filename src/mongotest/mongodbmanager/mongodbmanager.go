@@ -12,7 +12,7 @@ type ActionResults interface{}  //results from different actions
 
 //
 type MongoDBManager struct {
-	Configuration MongoDBConfiguration
+	configuration MongoDBConfiguration
 }
 
 //
@@ -25,11 +25,15 @@ type MongoDBConfiguration struct {
 	Password       string
 }
 
+func (db *MongoDBManager) Initialize( configuration MongoDBConfiguration ) {
+	db.configuration = configuration
+}
+
 //Method handling framework calls to mongoDB this method will create and destroy all resources needed
 //to work with mongoDB it will perform the action function and return the results
-func (db *MongoDBManager) Execute( action func(collection *mgo.Collection, arguments ActionArgument) ActionResults, arguments ActionArgument) ActionResults {
+func (db *MongoDBManager) Execute( action func( context interface{}, arguments interface{} ) interface{}, arguments interface{} ) interface{} {
 
-	databaseConnectionInfo := MongoDBConfiguration{}
+	databaseConnectionInfo := db.configuration
 
 	//set connection to mongo
 	dialInfo := &mgo.DialInfo{

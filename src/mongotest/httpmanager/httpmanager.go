@@ -39,7 +39,7 @@ type HttpRouterHandler struct {
 //
 type HttpMethodFunction struct {
 	HttpMethod string
-	Callback func( ) interface{}
+	Callback func( context interface{}, arguments interface{} ) interface{}
 }
 
 //The manager

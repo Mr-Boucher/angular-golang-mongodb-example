@@ -4,6 +4,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"fmt"
 	"../httpmanager"
+	"gopkg.in/mgo.v2"
 )
 
 const(
@@ -90,22 +91,22 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 
 ////////////////////////////////////////ACTION FUNCTIONS/////////////////////////////////////////////////////////////////////////
 //Load data from mongo returned as a []TestData
-//func load(collection *mgo.Collection, argument manager.ActionArgument) manager.ActionResults {
-func (d *DataEditor) load( ) interface{} {
+func (d *DataEditor) load( context interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println("dataeditor.load")
 	var results []TestData
 
-	////Load data
-	//query := collection.Find(bson.M{})
-	//query = query.Sort("value") //sort the data by its value
-	//
-	//query.All(&results) //execute the query
-	//
-	////Display the data returned for debugging
-	//for index, result := range results {
-	//	fmt.Println(index, "id:", result.Id, "value:", result.Value)
-	//}
+	//Load data
+	collection := context.(*mgo.Collection)
+	query := collection.Find(bson.M{})
+	query = query.Sort("value") //sort the data by its value
+
+	query.All(&results) //execute the query
+
+	//Display the data returned for debugging
+	for index, result := range results {
+		fmt.Println(index, "id:", result.Id, "value:", result.Value)
+	}
 
 	fmt.Println("Finished loading data")
 
