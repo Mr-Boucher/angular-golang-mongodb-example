@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
-	"net/http"
-
 	"../httpmanager"
 	"../mongodbmanager"
-
+	"net/http"
 )
 
 //
@@ -18,11 +16,11 @@ type ManagerContext struct {
 }
 
 type Registrable interface {
-	GetHttpRouterHandlers() []httpmanager.HttpRouterHandler
-	GetEmptyData() interface {}
-
 	GetId() int
 	SetId( int )
+	GetHttpRouterHandlers() []httpmanager.HttpRouterHandler
+	//Marshal( theData interface {} ) ([]byte, error)
+	Unmarshal( []byte ) (interface {}, error)
 }
 
 //The manager object
@@ -64,34 +62,50 @@ func (m *Manager) Start( ) {
 
 //This is the main call back method form all http requests
 func (m *Manager) Execute( context httpmanager.HttpContext ) {
-	fmt.Println("Executing", context)
-	theData := m.registered[context.ProcessorId].GetEmptyData()
+	fmt.Println("Executing:", context)
+	hasPayload := false
+
+	//use a factory method to get the processors specific data object
+	fmt.Println("Processor:", m.registered[context.ProcessorId])
 
 	//Handle payload if it exists
 	payload, err := ioutil.ReadAll(context.Request.Body)
-
 	fmt.Println( payload, ": ", len(payload), ": ", err )
 
 	//There is no body if body is nil or EOF err is returned
+	var theData interface{}
 	if payload != nil && len(payload) > 0 && err == nil {
-		fmt.Println("Has Body")
+		hasPayload = true
+		fmt.Println("Has Body:", payload )
 		defer context.Request.Body.Close() //make sure we clean up the steam
 
-
 		//
-		err = json.Unmarshal(payload, &theData)
+		theData, err = m.registered[context.ProcessorId].Unmarshal( payload )
+		fmt.Println("theData:", theData )
+
 		if err != nil {
 			http.Error(context.Writer, err.Error(), 500)
 			fmt.Println(err)
 			return
 		}
+
+		fmt.Println("theData:", theData )
 	}
 
-
+	//find the correct end point
+	//TODO make this a map instead of list
 	for _, method := range context.RouteHandler.EndPointMethods {
 		if method.HttpMethod == context.Request.Method {
 			result := m.mongoDBManager.Execute( method.Callback, theData )
-			json.NewEncoder(context.Writer).Encode(result) //stream the encoded data on the writer
+
+			if hasPayload {
+				byteData, err := json.Marshal(result)
+				if err != nil {
+					panic(err)
+				}
+
+				context.Writer.Write(byteData)
+			}
 
 			break; //not point in continuing to loop
 		}

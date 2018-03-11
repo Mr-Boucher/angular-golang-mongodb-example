@@ -1,11 +1,15 @@
 package dataeditor
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"fmt"
-	"../httpmanager"
-	"gopkg.in/mgo.v2"
 	"reflect"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"github.com/rs/xid"
+
+	"../httpmanager"
+	"encoding/json"
 )
 
 const(
@@ -37,9 +41,16 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 
 	return routers
 }
+
 //
-func (d *DataEditor) GetEmptyData() interface{} {
-	return []TestData{}
+func (d *DataEditor) Unmarshal( payload []byte ) (interface {}, error) {
+
+	theData := TestData{}
+	err := json.Unmarshal(payload, &theData)
+
+	fmt.Println("Data Editor:", theData )
+
+	return theData, err
 }
 
 func (d *DataEditor) GetId() int {
@@ -50,9 +61,6 @@ func (d *DataEditor) SetId( id int ) {
 	d.id = id
 }
 
-
-
-////////////////////////////////////////ACTION FUNCTIONS/////////////////////////////////////////////////////////////////////////
 //Load data from mongo returned as a []TestData
 func (d *DataEditor) load( context interface{}, arguments interface{} ) interface{} {
 
@@ -77,28 +85,36 @@ func (d *DataEditor) load( context interface{}, arguments interface{} ) interfac
 }
 
 ////remove data from db base
-func (d *DataEditor) create(context interface{}, arguments interface{} ) interface{}  {
+func (d *DataEditor) create(context interface{}, arguments interface{} ) interface{} {
 
 	//Validation handling
 	if arguments == nil {
-		panic( "Missing argument of type TestData" )
+		panic("Missing argument of type TestData")
 	}
+
+	fmt.Println("arguments:", arguments)
 
 	//Convert the empty interface to a string that contains the id
 	newData, ok := arguments.(TestData) //same as casting in java
 	if !ok {
-		errorMessage := fmt.Sprint("Argument should be of type TestData. It was ", reflect.TypeOf( arguments ))
-		panic( errorMessage )
+		errorMessage := fmt.Sprint("Argument should be of type TestData. It was ", reflect.TypeOf(arguments))
+		panic(errorMessage)
 	}
 
 	//Insert the TestData
 	fmt.Println("create:", "started")
 	collection := context.(*mgo.Collection)
-	err := collection.Insert( newData )
+	err := collection.Insert(newData)
 	if err != nil {
-		panic( err )
+		panic(err)
 	}
+
+	//creating new one the first element is the only one that needs a new id
+
+	newData.Id = xid.New().String()
+
 	fmt.Println("create:", "finished", newData)
+
 	return newData
 }
 
