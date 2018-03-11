@@ -25,7 +25,7 @@ type MongoDBConfiguration struct {
 	Password       string
 }
 
-func (db *MongoDBManager) Initialize( configuration MongoDBConfiguration ) {
+func (db *MongoDBManager) Construct( configuration MongoDBConfiguration ) {
 	db.configuration = configuration
 }
 

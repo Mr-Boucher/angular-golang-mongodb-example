@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"../httpmanager"
 	"gopkg.in/mgo.v2"
+	"reflect"
 )
 
 const(
 	baseUrl = "/data"
 )
 
+//
 type DataEditor struct {
-
+	id int
 }
 
 //Test data format
@@ -27,67 +29,28 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 	routers := []httpmanager.HttpRouterHandler{} //empty array for routers
 
 	//add /data route for GET and POST
-	funcs := []httpmanager.HttpMethodFunction{{"GET", d.load}, {"POST", d.load} }
-	routers = append( routers, httpmanager.HttpRouterHandler{ baseUrl, funcs } )
+	funcs := []httpmanager.HttpMethodFunction{{"GET", d.load}, {"POST", d.create} }
+	routers = append( routers, httpmanager.HttpRouterHandler{ d.id, baseUrl, funcs } )
 
-	////add /data/{id:[a-z0-9]+} for PUT and DELETE
-	//handler.Add( httphandler.HttpRouterHandler{baseUrl + "/{id:[a-z0-9]+}",
-	//	{ httphandler.HttpMethodFunction{"PUT", updateData},
-	//		httphandler.HttpMethodFunction{"DELETE", deleteById}}} )
+	funcs = []httpmanager.HttpMethodFunction{{"PUT", d.update}, {"DELETE", d.deleteById} }
+	routers = append( routers, httpmanager.HttpRouterHandler{ d.id, baseUrl + "/{id:[a-z0-9]+}", funcs } )
 
 	return routers
 }
-
-////////////////////////////////////////REST API FUNCTIONS/////////////////////////////////////////////////////////////////////////
-
 //
-//func createData(context processcontext.ExecutionContext) {
-	//// Read body
-	//body, err := ioutil.ReadAll(request.Body)
-	//defer request.Body.Close() //make sure we clean up the steam
-	//if err != nil {
-	//	http.Error(writer, err.Error(), 500)
-	//	fmt.Println(err)
-	//	return
-	//}
-	//
-	//var newData TestData
-	//fmt.Println( body )
-	//err = json.Unmarshal(body, &newData)
-	//if err != nil {
-	//	http.Error(writer, err.Error(), 500)
-	//	fmt.Println(err)
-	//	return
-	//}
-	//
-	//
-	//fmt.Println("createData:", request.URL.Path)
-	//setHeaders(writer) //Set response headers
-	//
-	//newData.Id = xid.New().String()
-	//result := execute(configuration.MongoDB, create, newData )
-	//byteData, err := json.Marshal( result )
-	//writer.Write( byteData )
-//}
+func (d *DataEditor) GetEmptyData() interface{} {
+	return []TestData{}
+}
 
-//
-//func updateData(context processcontext.ExecutionContext) {
-	//fmt.Println("updateData:", request.URL.Path)
-	//setHeaders(writer) //Set response headers
-	//execute(configuration.MongoDB, update, nil)
-//}
+func (d *DataEditor) GetId() int {
+	return d.id
+}
 
-//
-//func deleteData(context processcontext.ExecutionContext) {
-	//params := mux.Vars(request) //retrieve the query params from the url
-	//id := params["id"] //get the id of the object to delete
-	//fmt.Printf("deleteData(%s):%s\n", id, request.URL.Path)
-	//setHeaders(writer) //Set response headers
-	//
-	////perform the deleteDataById
-	////args: actionArgument = id
-	//execute(configuration.MongoDB, deleteById, id)
-//}
+func (d *DataEditor) SetId( id int ) {
+	d.id = id
+}
+
+
 
 ////////////////////////////////////////ACTION FUNCTIONS/////////////////////////////////////////////////////////////////////////
 //Load data from mongo returned as a []TestData
@@ -114,57 +77,67 @@ func (d *DataEditor) load( context interface{}, arguments interface{} ) interfac
 }
 
 ////remove data from db base
-//func create(collection *mgo.Collection, argument actionArgument) actionResults {
-//
-//	//Validation handling
-//	if argument == nil {
-//		panic( "Missing argument of type TestData" )
-//	}
-//
-//	//Convert the empty interface to a string that contains the id
-//	newData, ok := argument.(TestData) //same as casting in java
-//	if !ok {
-//		panic( "Argument should be of type TestData" )
-//	}
-//
-//	//Insert the TestData
-//	fmt.Println("create:", "started")
-//	err := collection.Insert( newData )
-//	if err != nil {
-//		panic( err )
-//	}
-//	fmt.Println("create:", "finished", newData)
-//	return newData
-//}
-//
-////remove data from db base
-//func update(collection *mgo.Collection, argument actionArgument) actionResults {
-//
-//	fmt.Println("update:", "started")
-//	//collection.Remove( bson.M{"id": id} )
-//	fmt.Println("update:", "finished")
-//	return nil
-//}
+func (d *DataEditor) create(context interface{}, arguments interface{} ) interface{}  {
+
+	//Validation handling
+	if arguments == nil {
+		panic( "Missing argument of type TestData" )
+	}
+
+	//Convert the empty interface to a string that contains the id
+	newData, ok := arguments.(TestData) //same as casting in java
+	if !ok {
+		errorMessage := fmt.Sprint("Argument should be of type TestData. It was ", reflect.TypeOf( arguments ))
+		panic( errorMessage )
+	}
+
+	//Insert the TestData
+	fmt.Println("create:", "started")
+	collection := context.(*mgo.Collection)
+	err := collection.Insert( newData )
+	if err != nil {
+		panic( err )
+	}
+	fmt.Println("create:", "finished", newData)
+	return newData
+}
+
 //
 ////remove data from db base
-//func deleteById(collection *mgo.Collection, argument actionArgument) actionResults {
+func (d *DataEditor) update(context interface{}, arguments interface{} ) interface{} {
+
+	fmt.Println("update:", "started")
+	id, ok := arguments.(string)
+	if !ok {
+		panic( "Argument should be of type string" )
+	}
+
+	collection := context.(*mgo.Collection)
+	collection.Remove( bson.M{"id": id} )
+	fmt.Println("update:", "finished")
+	return nil
+}
 //
-//	//Validation handling
-//	if argument == nil {
-//		panic( "Missing argument of type string" )
-//	}
-//
-//	//Convert the empty interface to a string that contains the id
-//	id, ok := argument.(string)
-//	if !ok {
-//		panic( "Argument should be of type string" )
-//	}
-//
-//	fmt.Println("deleteById:", id, "started")
-//	err := collection.Remove( bson.M{"id": id} )
-//	if err != nil {
-//		panic( err )
-//	}
-//	fmt.Println("deleteById:", id, "finished")
-//	return nil
-//}
+////remove data from db base
+func (d *DataEditor) deleteById(context interface{}, arguments interface{} ) interface{} {
+
+	//Validation handling
+	if arguments == nil {
+		panic( "Missing argument of type string" )
+	}
+
+	//Convert the empty interface to a string that contains the id
+	id, ok := arguments.(string)
+	if !ok {
+		panic( "Argument should be of type string" )
+	}
+
+	fmt.Println("deleteById:", id, "started")
+	collection := context.(*mgo.Collection)
+	err := collection.Remove( bson.M{"id": id} )
+	if err != nil {
+		panic( err )
+	}
+	fmt.Println("deleteById:", id, "finished")
+	return nil
+}

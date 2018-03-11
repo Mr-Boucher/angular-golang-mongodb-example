@@ -32,6 +32,7 @@ type HttpConnection struct {
 
 //Created by
 type HttpRouterHandler struct {
+	ProcessorId int
 	URL             string
 	EndPointMethods []HttpMethodFunction
 }
@@ -52,6 +53,7 @@ type HttpManager struct {
 
 //
 type HttpContext struct {
+	ProcessorId int
 	Writer http.ResponseWriter
 	Request *http.Request
 	RouteHandler HttpRouterHandler
@@ -71,9 +73,8 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 	}
 
 	//Create the execution context
-	context := HttpContext{writer, request, routeHandler}
+	context := HttpContext{routeHandler.ProcessorId, writer, request, routeHandler}
 	m.setHeaders( context )
-
 
 	//Call the action function requests
 	if context.Request.Method != "OPTIONS" {
@@ -82,7 +83,7 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 }
 
 //
-func (m *HttpManager) Initialize( requestCallback func( HttpContext ) ) {
+func (m *HttpManager) Construct( requestCallback func( HttpContext ) ) {
 	//
 	m.router = mux.NewRouter(); //create the underlying http router
 	m.registered = make([]registered, 0); //create the empty default list of supported

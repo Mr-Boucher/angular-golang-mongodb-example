@@ -26,7 +26,7 @@ func main() {
 	configuration := applicationmanager.ManagerContext{ httpConnectionDefault, mongoDBDefault }
 
 	//
-	manager.Initialize( configuration )
+	manager.Construct( configuration )
 
 	//Register business logic processors with the manager
 	manager.Register( &dataeditor.DataEditor{} )
