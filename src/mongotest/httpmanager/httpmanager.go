@@ -71,10 +71,10 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 	//TODO change to map of lists using base url as key
 	var routeHandler *HttpRouterHandler
 	for _, routerItem := range m.routingMap {
-		fmt.Println( "Matching", routerItem.URL, "with", url )
+		fmt.Println( "HttpManager::httpExecute Looking for router", routerItem.URL, "for", url )
 		match, _ := regexp.MatchString(routerItem.URL, url)
 		if match {
-			fmt.Println( "Matched", routerItem.URL, "with", url )
+			fmt.Println( "HttpManager::httpExecute found router", routerItem.URL, "for", url )
 			routeHandler = &routerItem
 			break
 		}

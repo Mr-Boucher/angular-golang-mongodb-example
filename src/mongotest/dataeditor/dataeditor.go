@@ -93,7 +93,9 @@ func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) inter
 }
 
 ////remove data from db base
-func (d *DataEditor) create(context interface{}, arguments interface{} ) interface{} {
+func (d *DataEditor) create(appcontext interface{}, arguments interface{} ) interface{} {
+
+	context := appcontext.(Context)
 
 	//Validation handling
 	if arguments == nil {
@@ -114,7 +116,7 @@ func (d *DataEditor) create(context interface{}, arguments interface{} ) interfa
 
 	//Insert the TestData
 	fmt.Println("create:", newData)
-	collection := context.(*mgo.Collection)
+	collection := context.GetCollection()
 	err := collection.Insert(newData)
 	if err != nil {
 		panic(err)
