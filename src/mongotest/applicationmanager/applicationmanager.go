@@ -63,7 +63,6 @@ func (m *Manager) Start( ) {
 //This is the main call back method form all http requests
 func (m *Manager) Execute( context httpmanager.HttpContext ) {
 	fmt.Println("Executing:", context)
-	hasPayload := false
 
 	//use a factory method to get the processors specific data object
 	fmt.Println("Processor:", m.registered[context.ProcessorId])
@@ -75,7 +74,6 @@ func (m *Manager) Execute( context httpmanager.HttpContext ) {
 	//There is no body if body is nil or EOF err is returned
 	var theData interface{}
 	if payload != nil && len(payload) > 0 && err == nil {
-		hasPayload = true
 		fmt.Println("Has Body:", payload )
 		defer context.Request.Body.Close() //make sure we clean up the steam
 
@@ -98,7 +96,7 @@ func (m *Manager) Execute( context httpmanager.HttpContext ) {
 		if method.HttpMethod == context.Request.Method {
 			result := m.mongoDBManager.Execute( method.Callback, theData )
 
-			if hasPayload {
+			if result != nil {
 				byteData, err := json.Marshal(result)
 				if err != nil {
 					panic(err)

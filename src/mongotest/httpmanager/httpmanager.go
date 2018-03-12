@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"regexp"
 )
 
 //
@@ -45,7 +46,7 @@ type HttpMethodFunction struct {
 
 //The manager
 type HttpManager struct {
-	RoutingMap map[string]HttpRouterHandler
+	routingMap []HttpRouterHandler
 	router *mux.Router
   registered []registered
 	callback func( HttpContext )
@@ -66,11 +67,19 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 	fmt.Println( "Recieved Route URL" + request.URL.Path )
 	url := request.URL.Path
 
-	//Get HttpRouterHandler
-	routeHandler, ok := m.RoutingMap[url]
-	if !ok {
-		panic( "No route handler for URL " + url )
+	//TODO change to map of lists using base url as key
+	var routeHandler HttpRouterHandler
+	for _, routerItem := range m.routingMap {
+		match, _ := regexp.MatchString(routerItem.URL, url)
+		if match {
+			routeHandler = routerItem
+		}
 	}
+
+	//Get HttpRouterHandler
+	//if routeHandler == nil {
+	//	panic( "No route handler for URL " + url )
+	//}
 
 	//Create the execution context
 	context := HttpContext{routeHandler.ProcessorId, writer, request, routeHandler}
@@ -87,7 +96,7 @@ func (m *HttpManager) Construct( requestCallback func( HttpContext ) ) {
 	//
 	m.router = mux.NewRouter(); //create the underlying http router
 	m.registered = make([]registered, 0); //create the empty default list of supported
-	m.RoutingMap = make(map[string]HttpRouterHandler); //create the empty default list of router handlers
+	m.routingMap = []HttpRouterHandler{}; //create the empty default list of router handlers
 	m.callback = requestCallback;
 }
 
@@ -102,13 +111,13 @@ func (m *HttpManager) Register(registrable Registrable) {
 		fmt.Println( "Registering handler: " + reflect.TypeOf(handler).String())
 
 		//make sure it is not already registered
-		_, ok := m.RoutingMap[handler.URL]
-		if ok {
-			panic( "Route " + handler.URL + " is already defined" )
-		}
+		//_, ok := m.routingMap[handler.URL]
+		//if ok {
+		//	panic( "Route " + handler.URL + " is already defined" )
+		//}
 
 		//Cache the handler for use in the execute when the request comes in
-		m.RoutingMap[handler.URL] = handler;
+		m.routingMap = append( m.routingMap, handler )
 
 		//Create endpoint methods for all handler endpoints
 		m.router.HandleFunc(handler.URL, m.httpExecute).Methods( "OPTIONS" ) //options must always be set for CORS to work
@@ -133,6 +142,7 @@ func (m *HttpManager) setHeaders( context HttpContext ) {
 		methodsStrings += endpoint.HttpMethod + ","
 	}
 
+	fmt.Println( "MethodsStrings: ", methodsStrings)
 	context.Writer.Header().Add("Access-Control-Allow-Origin", "*")                                            //Allow access from anywhere
 	context.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Request-Origin") //Allows setting of the Content-Type by the client
 	context.Writer.Header().Add("Access-Control-Allow-Methods", methodsStrings)       //REST API supports GET, POST, PUT, DELETE

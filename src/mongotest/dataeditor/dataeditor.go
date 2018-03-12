@@ -101,8 +101,11 @@ func (d *DataEditor) create(context interface{}, arguments interface{} ) interfa
 		panic(errorMessage)
 	}
 
+	//make sure we create the id before storing it
+	newData.Id = xid.New().String()
+
 	//Insert the TestData
-	fmt.Println("create:", "started")
+	fmt.Println("create:", newData)
 	collection := context.(*mgo.Collection)
 	err := collection.Insert(newData)
 	if err != nil {
@@ -110,9 +113,6 @@ func (d *DataEditor) create(context interface{}, arguments interface{} ) interfa
 	}
 
 	//creating new one the first element is the only one that needs a new id
-
-	newData.Id = xid.New().String()
-
 	fmt.Println("create:", "finished", newData)
 
 	return newData
