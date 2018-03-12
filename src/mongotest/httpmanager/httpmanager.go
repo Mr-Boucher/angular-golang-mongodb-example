@@ -58,6 +58,7 @@ type HttpContext struct {
 	Writer http.ResponseWriter
 	Request *http.Request
 	RouteHandler HttpRouterHandler
+	Params map[string]string
 }
 
 //This is the main algorithm for processing requests
@@ -70,9 +71,12 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 	//TODO change to map of lists using base url as key
 	var routeHandler *HttpRouterHandler
 	for _, routerItem := range m.routingMap {
+		fmt.Println( "Matching", routerItem.URL, "with", url )
 		match, _ := regexp.MatchString(routerItem.URL, url)
 		if match {
+			fmt.Println( "Matched", routerItem.URL, "with", url )
 			routeHandler = &routerItem
+			break
 		}
 	}
 
@@ -83,7 +87,7 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 	}
 
 	//Create the execution context
-	context := HttpContext{routeHandler.ProcessorId, writer, request, *routeHandler}
+	context := HttpContext{routeHandler.ProcessorId, writer, request, *routeHandler, mux.Vars(request)}
 	m.setHeaders( context )
 
 	//Call the action function requests

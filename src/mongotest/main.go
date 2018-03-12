@@ -23,7 +23,7 @@ func main() {
 	manager := applicationmanager.Manager{}
 
 	//create the context
-	configuration := applicationmanager.ManagerContext{ httpConnectionDefault, mongoDBDefault }
+	configuration := applicationmanager.ManagerConfiguration{ httpConnectionDefault, mongoDBDefault }
 
 	//
 	manager.Construct( configuration )

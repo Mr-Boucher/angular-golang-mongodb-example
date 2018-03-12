@@ -17,6 +17,12 @@ const(
 )
 
 //
+type Context interface {
+	GetParameters() map[string]string
+	GetCollection() *mgo.Collection
+}
+
+//
 type DataEditor struct {
 	id int
 }
@@ -62,13 +68,15 @@ func (d *DataEditor) SetId( id int ) {
 }
 
 //Load data from mongo returned as a []TestData
-func (d *DataEditor) load( context interface{}, arguments interface{} ) interface{} {
+func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println("dataeditor.load")
 	var results []TestData
 
+	context := appcontext.(Context)
+
 	//Load data
-	collection := context.(*mgo.Collection)
+	collection := context.GetCollection()
 	query := collection.Find(bson.M{})
 	query = query.Sort("value") //sort the data by its value
 
@@ -133,9 +141,12 @@ func (d *DataEditor) update(context interface{}, arguments interface{} ) interfa
 	fmt.Println("update:", "finished")
 	return nil
 }
-//
-////remove data from db base
-func (d *DataEditor) deleteById(context interface{}, arguments interface{} ) interface{} {
+
+//remove data from db base
+func (d *DataEditor) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
+
+	context := appcontext.(Context)
+	id := context.GetParameters()["id"] //get the id of the object to delete
 
 	fmt.Println( "arguments:", arguments )
 
@@ -151,7 +162,7 @@ func (d *DataEditor) deleteById(context interface{}, arguments interface{} ) int
 	}
 
 	fmt.Println("deleteById:", id, "started")
-	collection := context.(*mgo.Collection)
+	collection := context.GetCollection()
 	err := collection.Remove( bson.M{"id": id} )
 	if err != nil {
 		panic( err )

@@ -25,15 +25,14 @@ type MongoDBConfiguration struct {
 	Password       string
 }
 
-func (db *MongoDBManager) Construct( configuration MongoDBConfiguration ) {
-	db.configuration = configuration
+//Constructor
+func (db *MongoDBManager) Construct(configuration MongoDBConfiguration) {
+	//db.configuration = configuration
 }
 
-//Method handling framework calls to mongoDB this method will create and destroy all resources needed
-//to work with mongoDB it will perform the action function and return the results
-func (db *MongoDBManager) Execute( action func( context interface{}, arguments interface{} ) interface{}, arguments interface{} ) interface{} {
-
-	databaseConnectionInfo := db.configuration
+//
+func (db *MongoDBManager) InitContext(contextHolder ContextHolder) {
+	databaseConnectionInfo := contextHolder.GetMongoDBContext().GetConfiguration()
 
 	//set connection to mongo
 	dialInfo := &mgo.DialInfo{
@@ -59,11 +58,25 @@ func (db *MongoDBManager) Execute( action func( context interface{}, arguments i
 		panic(err)
 	}
 	fmt.Println("Created session:", session)
+	contextHolder.GetMongoDBContext().SetSession( session )
+}
 
-	//If we have a valid session make sure it is closed once the method exits otherwise it will be a session leak
-	defer cleanUp( session )
+//Clean up any resources created by the InitContext
+func (db *MongoDBManager) CleanupContext(contextHolder ContextHolder) {
+	session := contextHolder.GetMongoDBContext().GetSession()
+	fmt.Println("Closing session:", session)
+	session.Close()
+}
+
+//Method handling framework calls to mongoDB this method will create and destroy all resources needed
+//to work with mongoDB it will perform the action function and return the results
+func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(context interface{}, arguments interface{}) interface{}, arguments interface{}) interface{} {
+
+	//
+	databaseConnectionInfo := contextHolder.GetMongoDBContext().GetConfiguration()
 
 	//Get the mongo db from the session
+	session := contextHolder.GetMongoDBContext().GetSession()
 	fmt.Println("Opening DB", databaseConnectionInfo.DatabaseName, "using session", session)
 	database := session.DB(databaseConnectionInfo.DatabaseName)
 	if database == nil {
@@ -77,13 +90,8 @@ func (db *MongoDBManager) Execute( action func( context interface{}, arguments i
 	}
 
 	//execute the acton function
-	result := action(collection, arguments)
+	result := action(contextHolder.GetMongoDBContext(), arguments)
 
 	return result;
 }
 
-//Make sure the resources are cleaned up
-func cleanUp(session *mgo.Session) {
-	fmt.Println( "Closing session:", session)
-	session.Close()
-}
