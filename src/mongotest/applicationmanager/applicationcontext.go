@@ -8,7 +8,7 @@ import(
 
 //
 type ContextHolder interface {
-	GetMongoDBContext() *mongodbmanager.MongoDBContext
+	GetMongoDBContext() mongodbmanager.MongoDBContext
 	GetHttpContext() *httpmanager.HttpContext
 	GetParameters() map[string]string
 	GetCollection() *mgo.Collection
@@ -16,15 +16,14 @@ type ContextHolder interface {
 
 //
 type ApplicationContext struct {
-	configuration *ManagerConfiguration
-	parameters *map[string]string
-
+	configuration *ApplicationConfiguration
+	parameters map[string]string
 	httpContext *httpmanager.HttpContext
-	mongoDBContext *mongodbmanager.MongoDBContextObject
+	mongoDBContext mongodbmanager.MongoDBContext
 }
 
 //
-func (ac *ApplicationContext) GetMongoDBContext() *mongodbmanager.MongoDBContextObject {
+func (ac *ApplicationContext) GetMongoDBContext() mongodbmanager.MongoDBContext {
 	return ac.mongoDBContext
 }
 
@@ -34,16 +33,16 @@ func (ac *ApplicationContext) GetHttpContext() *httpmanager.HttpContext {
 }
 
 //
-func (ac *ApplicationContext) GetParameters() *map[string]string {
+func (ac *ApplicationContext) GetParameters() map[string]string {
 	return ac.parameters
 }
 
 //
-func (ac *ApplicationContext) GetConfiguration() *mongodbmanager.MongoDBContextObject {
-	return ac.mongoDBContext
+func (ac *ApplicationContext) GetConfiguration() *ApplicationConfiguration {
+	return ac.configuration
 }
 
 //
 func (ac *ApplicationContext) GetCollection() *mgo.Collection {
-	return (*ac.mongoDBContext).GetCollection()
+	return ac.mongoDBContext.GetCollection()
 }

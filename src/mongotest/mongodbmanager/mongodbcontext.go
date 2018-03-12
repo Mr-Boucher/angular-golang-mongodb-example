@@ -2,6 +2,7 @@ package mongodbmanager
 
 import (
 	"gopkg.in/mgo.v2"
+	"fmt"
 )
 
 
@@ -27,27 +28,28 @@ type MongoDBContextObject struct {
 	collection    *mgo.Collection
 }
 
-func (co MongoDBContextObject ) GetCollection() *mgo.Collection {
+func (co *MongoDBContextObject ) GetCollection() *mgo.Collection {
 	return co.collection
 }
 
-func (co MongoDBContextObject ) GetSession() *mgo.Session {
+func (co *MongoDBContextObject ) GetSession() *mgo.Session {
 	return co.session
 }
 
-func (co MongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
+func (co *MongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
 	return co.configuration
 }
 
-func (co MongoDBContextObject ) SetCollection( collection *mgo.Collection ) {
+func (co *MongoDBContextObject ) SetCollection( collection *mgo.Collection ) {
 	co.collection = collection
 }
 
-func (co MongoDBContextObject ) SetSession( session *mgo.Session ) {
+func (co *MongoDBContextObject ) SetSession( session *mgo.Session ) {
 	co.session = session
 }
 
-func (co MongoDBContextObject ) SetConfiguration(configuration *MongoDBConfiguration ) {
+func (co *MongoDBContextObject ) SetConfiguration(configuration *MongoDBConfiguration ) {
+	fmt.Println( "MongoDBContext::SetConfiguration to", configuration )
 	co.configuration = configuration
 }
 

@@ -97,12 +97,16 @@ func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Req
 }
 
 //
-func (m *HttpManager) Construct( requestCallback func( HttpContext ) ) {
+func NewHttpManager( requestCallback func( HttpContext ) ) *HttpManager {
+
 	//
+	m := HttpManager{}
 	m.router = mux.NewRouter(); //create the underlying http router
 	m.registered = make([]registered, 0); //create the empty default list of supported
 	m.routingMap = []HttpRouterHandler{}; //create the empty default list of router handlers
 	m.callback = requestCallback;
+	fmt.Println( "HttpManager::NewHttpManager", m  )
+	return &m
 }
 
 //

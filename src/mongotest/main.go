@@ -19,14 +19,11 @@ func main() {
 	//Log start up arguments
 	fmt.Println(strings.Join(os.Args, " "))
 
-	//Create the manger that handles everything
-	manager := applicationmanager.Manager{}
-
 	//create the context
-	configuration := applicationmanager.ManagerConfiguration{ httpConnectionDefault, mongoDBDefault }
+	configuration := *applicationmanager.NewApplicationConfiguration( httpConnectionDefault, mongoDBDefault )
 
 	//
-	manager.Construct( configuration )
+	manager := applicationmanager.NewApplicationManager( configuration )
 
 	//Register business logic processors with the manager
 	manager.Register( &dataeditor.DataEditor{} )

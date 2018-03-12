@@ -15,24 +15,25 @@ type MongoDBManager struct {
 	configuration MongoDBConfiguration
 }
 
-//
-type MongoDBConfiguration struct {
-	DatabaseName   string
-	CollectionName string
-	Cluster        []string
-	UserDatabase   string
-	Username       string
-	Password       string
-}
-
 //Constructor
-func (db *MongoDBManager) Construct(configuration MongoDBConfiguration) {
-	//db.configuration = configuration
+func NewMongoDBManager(configuration MongoDBConfiguration) *MongoDBManager {
+	m := MongoDBManager{}
+	fmt.Println( "MongoDBManager::NewMongoDBManager", m )
+	return &m
 }
 
 //
 func (db *MongoDBManager) InitContext(contextHolder ContextHolder) {
-	databaseConnectionInfo := contextHolder.GetMongoDBContext().GetConfiguration()
+
+	//
+	context := contextHolder.GetMongoDBContext()
+	fmt.Println( "MongoDBManager::InitContext MongoDBContext:", context);
+
+	databaseConnectionInfo := context.GetConfiguration()
+	fmt.Println( "MongoDBManager::InitContext databaseConnectionInfo:", databaseConnectionInfo );
+	if databaseConnectionInfo == nil {
+		panic( "Missing databaseConnectionInfo is nil" )
+	}
 
 	//set connection to mongo
 	dialInfo := &mgo.DialInfo{
@@ -58,7 +59,7 @@ func (db *MongoDBManager) InitContext(contextHolder ContextHolder) {
 		panic(err)
 	}
 	fmt.Println("Created session:", session)
-	contextHolder.GetMongoDBContext().SetSession( session )
+	context.SetSession( session )
 }
 
 //Clean up any resources created by the InitContext
@@ -90,7 +91,8 @@ func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(conte
 	}
 
 	//execute the acton function
-	result := action(contextHolder.GetMongoDBContext(), arguments)
+	contextHolder.GetMongoDBContext().SetCollection( collection )
+	result := action(contextHolder, arguments)
 
 	return result;
 }
