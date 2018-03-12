@@ -62,27 +62,28 @@ type HttpContext struct {
 
 //This is the main algorithm for processing requests
 func (m *HttpManager) httpExecute( writer http.ResponseWriter, request *http.Request ) {
-	fmt.Println( "Executing" )
+	fmt.Println( "Executing:httpExecute" )
 	//Scrub the url if needed
 	fmt.Println( "Recieved Route URL" + request.URL.Path )
 	url := request.URL.Path
 
 	//TODO change to map of lists using base url as key
-	var routeHandler HttpRouterHandler
+	var routeHandler *HttpRouterHandler
 	for _, routerItem := range m.routingMap {
 		match, _ := regexp.MatchString(routerItem.URL, url)
 		if match {
-			routeHandler = routerItem
+			routeHandler = &routerItem
 		}
 	}
 
 	//Get HttpRouterHandler
-	//if routeHandler == nil {
-	//	panic( "No route handler for URL " + url )
-	//}
+	if routeHandler == nil {
+		panic( "No route handler for URL " + url )
+		return
+	}
 
 	//Create the execution context
-	context := HttpContext{routeHandler.ProcessorId, writer, request, routeHandler}
+	context := HttpContext{routeHandler.ProcessorId, writer, request, *routeHandler}
 	m.setHeaders( context )
 
 	//Call the action function requests

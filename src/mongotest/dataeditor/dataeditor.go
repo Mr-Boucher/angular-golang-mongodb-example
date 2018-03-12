@@ -137,6 +137,8 @@ func (d *DataEditor) update(context interface{}, arguments interface{} ) interfa
 ////remove data from db base
 func (d *DataEditor) deleteById(context interface{}, arguments interface{} ) interface{} {
 
+	fmt.Println( "arguments:", arguments )
+
 	//Validation handling
 	if arguments == nil {
 		panic( "Missing argument of type string" )
