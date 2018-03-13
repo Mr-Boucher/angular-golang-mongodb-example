@@ -34,16 +34,27 @@ type TestData struct {
 	Id       string        `bson:"id" json:"id"`           //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
 }
 
-//
+//GetHttpRouterHandlers() meets the interface
 func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
-	routers := []httpmanager.HttpRouterHandler{} //empty array for routers
 
-	//add /data route for GET and POST
-	funcs := []httpmanager.HttpMethodFunction{{"GET", d.load}, {"POST", d.create} }
-	routers = append( routers, httpmanager.HttpRouterHandler{ d.id, baseUrl, funcs } )
+	//Create the call back methods for /Data
+	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
+	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "GET", d.load ) )
+	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "POST", d.create ) )
+	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "DELETE", d.deleteAll ) )
+	dataMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl, dataMethodFunctions )
 
-	funcs = []httpmanager.HttpMethodFunction{{"PUT", d.update}, {"DELETE", d.deleteById} }
-	routers = append( routers, httpmanager.HttpRouterHandler{ d.id, baseUrl + "/{id:[a-z0-9]+}", funcs } )
+
+	//add the backs method for /Data/id
+	dataIdMethodFunctions := []httpmanager.HttpMethodFunction{}
+	dataIdMethodFunctions = append( dataIdMethodFunctions, httpmanager.NewHttpMethodFunction( "PUT", d.update ) )
+	dataIdMethodFunctions = append( dataIdMethodFunctions, httpmanager.NewHttpMethodFunction( "DELETE", d.deleteById ) )
+	dataIdMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl + "/{id:[a-z0-9]+}", dataIdMethodFunctions )
+
+	//
+	routers := []httpmanager.HttpRouterHandler{}
+	routers = append( routers, dataMethodHandler )
+	routers = append( routers, dataIdMethodHandler )
 
 	return routers
 }
@@ -170,5 +181,34 @@ func (d *DataEditor) deleteById(appcontext interface{}, arguments interface{} ) 
 		panic( err )
 	}
 	fmt.Println("deleteById:", id, "finished")
+	return nil
+}
+
+//remove data from db base
+func (d *DataEditor) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
+
+	//context := appcontext.(Context)
+	//id := context.GetParameters()["id"] //get the id of the object to delete
+	//
+	//fmt.Println( "arguments:", arguments )
+	//
+	////Validation handling
+	//if arguments == nil {
+	//	panic( "Missing argument of type string" )
+	//}
+	//
+	////Convert the empty interface to a string that contains the id
+	//id, ok := arguments.(string)
+	//if !ok {
+	//	panic( "Argument should be of type string" )
+	//}
+	//
+	//fmt.Println("deleteById:", id, "started")
+	//collection := context.GetCollection()
+	//err := collection.Remove( bson.M{"id": id} )
+	//if err != nil {
+	//	panic( err )
+	//}
+	//fmt.Println("deleteById:", id, "finished")
 	return nil
 }

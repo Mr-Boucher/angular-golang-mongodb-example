@@ -11,38 +11,35 @@ import (
 )
 
 //
-type Registrable interface {
-	GetId() int
-	SetId( int )
-	GetHttpRouterHandlers() []httpmanager.HttpRouterHandler
-	//Marshal( theData interface {} ) ([]byte, error)
-	Unmarshal( []byte ) (interface {}, error)
+type ApplicationManager interface {
+	Register( registrable Registrable )
+	Start( )
 }
 
 //The manager object
-type ApplicationManager struct {
+type applicationManagerObject struct {
 	nextId int
 	registered map[int]Registrable
 	configuration *ApplicationConfiguration
-	httpManager *httpmanager.HttpManager
+	httpManager httpmanager.HttpManager
 	mongoDBManager *mongodbmanager.MongoDBManager
 }
 
 //Register business objects
-func NewApplicationManager( configuration ApplicationConfiguration ) *ApplicationManager {
+func NewApplicationManager( configuration ApplicationConfiguration ) ApplicationManager {
 	fmt.Println( "ApplicationManager::ApplicationConfiguration", configuration  )
-	m := ApplicationManager{}
+	m := applicationManagerObject{}
 	m.registered = make(map[int]Registrable)
 	m.configuration = &configuration
 	//Register with the http manager so it listens to the correct endpoints
-	m.httpManager = httpmanager.NewHttpManager( m.Execute )
+	m.httpManager = httpmanager.NewHttpManager( &m )
 	m.mongoDBManager = mongodbmanager.NewMongoDBManager( configuration.mongoDBConfiguration )
 	fmt.Println( "ApplicationManager::NewApplicationManager", m  )
 	return &m
 }
 
 //Register business objects
-func (m *ApplicationManager) Register( registrable Registrable ) {
+func (m *applicationManagerObject) Register( registrable Registrable ) {
 	m.nextId++
 	registrable.SetId( m.nextId )
 	m.registered[m.nextId] = registrable
@@ -53,14 +50,14 @@ func (m *ApplicationManager) Register( registrable Registrable ) {
 }
 
 //Handler the start up of the manager
-func (m *ApplicationManager) Start( ) {
+func (m *applicationManagerObject) Start( ) {
 	//start up server execution will wait here until the server is shutdown
 	fmt.Println( "ApplicationManager::Start"  )
 	m.httpManager.Start( m.configuration.httpConnection );
 }
 
 //This is the main call back method form all http requests
-func (m *ApplicationManager) Execute( httpcontext httpmanager.HttpContext ) {
+func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext ) {
 	fmt.Println("ApplicationManager::Execute", httpcontext)
 
 	//
@@ -106,8 +103,8 @@ func (m *ApplicationManager) Execute( httpcontext httpmanager.HttpContext ) {
 	//find the correct end point
 	//TODO make this a map instead of list
 	fmt.Println("ApplicationManager::Finding router:", context )
-	for _, method := range context.httpContext.RouteHandler.EndPointMethods {
-		if method.HttpMethod == context.httpContext.Request.Method {
+	for _, method := range context.httpContext.RouteHandler.GetEndPointMethods() {
+		if method.GetHttpMethod() == context.httpContext.Request.Method {
 			fmt.Println("ApplicationManager::Context:", context )
 			fmt.Println("ApplicationManager::MongoContext:", context.GetMongoDBContext() )
 			//Make sure the Mongo context is connected to the mongo configuration
@@ -115,7 +112,7 @@ func (m *ApplicationManager) Execute( httpcontext httpmanager.HttpContext ) {
 			defer m.mongoDBManager.CleanupContext( &context ) //make sure the context for mongo is cleaned up
 
 			//call data store
-			result := m.mongoDBManager.Execute( &context, method.Callback, theData )
+			result := m.mongoDBManager.Execute( &context, method.GetCallback(), theData )
 
 			if result != nil {
 				byteData, err := json.Marshal(result)
