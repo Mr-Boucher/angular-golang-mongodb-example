@@ -24,7 +24,7 @@ export class Configuration {
 @Injectable()
 export class ConfigurationService {
 
-  configurationUrl = "configuration/:id";
+  objectUrl = "configuration";
 
   subject:Subject<Configuration[]> = new Subject();
   _configurations:Configuration[] = []; //Make sure it is defaulted to an empty array else it will be undefined causing errors
@@ -52,10 +52,11 @@ export class ConfigurationService {
    * @param configuration
    */
   update(configuration:Configuration):void {
-    this.httpService.update(configuration, this.configurationUrl, this.subject, this._configurations);
+    this.httpService.update(configuration, this.objectUrl, this.subject, this._configurations);
   }
 
   load():void {
-
+    console.log("load data");
+    this.httpService.load(this.objectUrl, this.subject, this._configurations);
   }
 }

@@ -8,8 +8,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/rs/xid"
 
-	"../httpmanager"
 	"encoding/json"
+
+	"../httpmanager"
 )
 
 const(
@@ -23,7 +24,16 @@ type Context interface {
 }
 
 //
-type DataEditor struct {
+type DataEditor interface {
+	GetId() int
+	SetId( int )
+	GetHttpRouterHandlers() []httpmanager.HttpRouterHandler
+	//Marshal( theData interface {} ) ([]byte, error)
+	Unmarshal( []byte ) (interface {}, error)
+}
+
+//
+type DataEditorObject struct {
 	id int
 }
 
@@ -34,8 +44,14 @@ type TestData struct {
 	Id       string        `bson:"id" json:"id"`           //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
 }
 
+//
+func NewEditor( ) DataEditor {
+	config := DataEditorObject{}
+	return &config
+}
+
 //GetHttpRouterHandlers() meets the interface
-func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
+func (d *DataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 
 	//Create the call back methods for /Data
 	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
@@ -60,7 +76,7 @@ func (d *DataEditor) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 }
 
 //
-func (d *DataEditor) Unmarshal( payload []byte ) (interface {}, error) {
+func (d *DataEditorObject) Unmarshal( payload []byte ) (interface {}, error) {
 
 	theData := TestData{}
 	err := json.Unmarshal(payload, &theData)
@@ -70,16 +86,16 @@ func (d *DataEditor) Unmarshal( payload []byte ) (interface {}, error) {
 	return theData, err
 }
 
-func (d *DataEditor) GetId() int {
+func (d *DataEditorObject) GetId() int {
 	return d.id
 }
 
-func (d *DataEditor) SetId( id int ) {
+func (d *DataEditorObject) SetId( id int ) {
 	d.id = id
 }
 
 //Load data from mongo returned as a []TestData
-func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) interface{} {
+func (d *DataEditorObject) load( appcontext interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println( "DataEditor::load arguments", arguments )
 	var results []TestData
@@ -104,7 +120,7 @@ func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) inter
 }
 
 ////remove data from db base
-func (d *DataEditor) create(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *DataEditorObject) create(appcontext interface{}, arguments interface{} ) interface{} {
 	fmt.Println( "DataEditor::create arguments", arguments )
 	context := appcontext.(Context)
 
@@ -139,9 +155,8 @@ func (d *DataEditor) create(appcontext interface{}, arguments interface{} ) inte
 	return newData
 }
 
-//
-////remove data from db base
-func (d *DataEditor) update(context interface{}, arguments interface{} ) interface{} {
+//remove data from db base
+func (d *DataEditorObject) update(context interface{}, arguments interface{} ) interface{} {
 	fmt.Println( "DataEditor::update arguments", arguments )
 
 	//id, ok := arguments.(string)
@@ -156,7 +171,7 @@ func (d *DataEditor) update(context interface{}, arguments interface{} ) interfa
 }
 
 //remove data from db base
-func (d *DataEditor) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *DataEditorObject) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
 	context := appcontext.(Context)
 	id := context.GetParameters()["id"] //get the id of the object to delete
 	fmt.Println( "DataEditor::deleteById", context.GetParameters(), "started" )
@@ -172,7 +187,7 @@ func (d *DataEditor) deleteById(appcontext interface{}, arguments interface{} ) 
 }
 
 //remove data from db base
-func (d *DataEditor) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *DataEditorObject) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println( "DataEditor::deleteAll arguments", arguments )
 	//context := appcontext.(Context)

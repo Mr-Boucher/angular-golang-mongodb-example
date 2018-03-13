@@ -1,30 +1,129 @@
 package configuration
 
-import(
- //"../httphandler"
+import (
+	"fmt"
+	"encoding/json"
+	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2"
+
+	"../httpmanager"
 )
 
-//const(
-//	baseUrl = "/data"
-//)
-//
-//type Configuration struct {
-//
-//}
+const(
+	baseUrl = "/configuration"
+)
 
 //
-//func initializeHTTPSupport( handler httphandler.HttpHandler ) {
-	//add /data route for GET and POST
-	//handler.Add( httphandler.HttpRouterHandler{baseUrl,
-	//	{ httphandler.HttpMethodFunction{"GET", getData},
-	//		httphandler.HttpMethodFunction{"POST", createData}},
-	//	options} )
+type Context interface {
+	GetParameters() map[string]string
+	GetCollection() *mgo.Collection
+}
+
+//Test data format
+type ConfigurationData struct {
+	ObjectId bson.ObjectId `bson:"_id,omitempty" json:"-"` //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response) note the "-" it means that json does not have this
+	Value    string        `bson:"value" json:"value"`     //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
+	Id       string        `bson:"id" json:"id"`           //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
+}
+
+//
+type Configuration interface {
+	GetId() int
+	SetId( int )
+	GetHttpRouterHandlers() []httpmanager.HttpRouterHandler
+	//Marshal( theData interface {} ) ([]byte, error)
+	Unmarshal( []byte ) (interface {}, error)
+}
+
+//
+type ConfigurationObject struct {
+	id int
+}
+
+//
+func NewConfiguration( ) Configuration {
+	config := ConfigurationObject{}
+	return &config
+}
+
+func (d *ConfigurationObject) GetId() int {
+	return d.id
+}
+
+func (d *ConfigurationObject) SetId( id int ) {
+	d.id = id
+}
+
+//GetHttpRouterHandlers() meets the interface
+func (d *ConfigurationObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
+
+	//Create the call back methods for /Data
+	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
+	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "GET", d.load ) )
+	dataMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl, dataMethodFunctions )
+
+
+	//add the backs method for /Data/id
+	dataIdMethodFunctions := []httpmanager.HttpMethodFunction{}
+	dataIdMethodFunctions = append( dataIdMethodFunctions, httpmanager.NewHttpMethodFunction( "PUT", d.update ) )
+	dataIdMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl + "/{id:[a-z0-9]+}", dataIdMethodFunctions )
+
 	//
-	////add /data/{id:[a-z0-9]+} for PUT and DELETE
-	//handler.Add( httphandler.HttpRouterHandler{baseUrl + "/{id:[a-z0-9]+}",
-	//	{ httphandler.HttpMethodFunction{"PUT", updateData},
-	//		httphandler.HttpMethodFunction{"DELETE", deleteById}},
-	//	options} )
-//}
+	routers := []httpmanager.HttpRouterHandler{}
+	routers = append( routers, dataMethodHandler )
+	routers = append( routers, dataIdMethodHandler )
+
+	return routers
+}
+
+//
+func (d *ConfigurationObject) Unmarshal( payload []byte ) (interface {}, error) {
+
+	theData := ConfigurationData{}
+	err := json.Unmarshal(payload, &theData)
+
+	fmt.Println("ConfigurationData:", theData )
+
+	return theData, err
+}
+
+//
+func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{} ) interface{} {
+	fmt.Println( "ConfigurationData::load arguments", arguments )
+	var results []ConfigurationData
+
+	context := appcontext.(Context)
+
+	//Load data
+	collection := context.GetCollection()
+	query := collection.Find(bson.M{})
+	query = query.Sort("value") //sort the data by its value
+
+	query.All(&results) //execute the query
+
+	//Display the data returned for debugging
+	for index, result := range results {
+		fmt.Println(index, "id:", result.Id, "value:", result.Value)
+	}
+
+	fmt.Println("Finished loading data")
+
+	return results
+}
+
+////remove data from db base
+func (d *ConfigurationObject) update(context interface{}, arguments interface{} ) interface{} {
+	fmt.Println( "ConfigurationData::update arguments", arguments )
+
+	//id, ok := arguments.(string)
+	//if !ok {
+	//	panic( "Argument should be of type string" )
+	//}
+	//
+	//collection := context.(*mgo.Collection)
+	//collection.Remove( bson.M{"id": id} )
+	fmt.Println("update:", "finished")
+	return nil
+}
 
 
