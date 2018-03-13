@@ -72,6 +72,7 @@ func (db *MongoDBManager) CleanupContext(contextHolder ContextHolder) {
 //Method handling framework calls to mongoDB this method will create and destroy all resources needed
 //to work with mongoDB it will perform the action function and return the results
 func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(context interface{}, arguments interface{}) interface{}, arguments interface{}) interface{} {
+	fmt.Println("MongoDBManager::Context:", contextHolder )
 
 	//
 	databaseConnectionInfo := contextHolder.GetMongoDBContext().GetConfiguration()

@@ -81,7 +81,7 @@ func (d *DataEditor) SetId( id int ) {
 //Load data from mongo returned as a []TestData
 func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) interface{} {
 
-	fmt.Println("dataeditor.load")
+	fmt.Println( "DataEditor::load arguments", arguments )
 	var results []TestData
 
 	context := appcontext.(Context)
@@ -105,7 +105,7 @@ func (d *DataEditor) load( appcontext interface{}, arguments interface{} ) inter
 
 ////remove data from db base
 func (d *DataEditor) create(appcontext interface{}, arguments interface{} ) interface{} {
-
+	fmt.Println( "DataEditor::create arguments", arguments )
 	context := appcontext.(Context)
 
 	//Validation handling
@@ -142,51 +142,39 @@ func (d *DataEditor) create(appcontext interface{}, arguments interface{} ) inte
 //
 ////remove data from db base
 func (d *DataEditor) update(context interface{}, arguments interface{} ) interface{} {
+	fmt.Println( "DataEditor::update arguments", arguments )
 
-	fmt.Println("update:", "started")
-	id, ok := arguments.(string)
-	if !ok {
-		panic( "Argument should be of type string" )
-	}
-
-	collection := context.(*mgo.Collection)
-	collection.Remove( bson.M{"id": id} )
+	//id, ok := arguments.(string)
+	//if !ok {
+	//	panic( "Argument should be of type string" )
+	//}
+	//
+	//collection := context.(*mgo.Collection)
+	//collection.Remove( bson.M{"id": id} )
 	fmt.Println("update:", "finished")
 	return nil
 }
 
 //remove data from db base
 func (d *DataEditor) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
-
 	context := appcontext.(Context)
 	id := context.GetParameters()["id"] //get the id of the object to delete
+	fmt.Println( "DataEditor::deleteById", context.GetParameters(), "started" )
 
-	fmt.Println( "arguments:", arguments )
-
-	//Validation handling
-	if arguments == nil {
-		panic( "Missing argument of type string" )
-	}
-
-	//Convert the empty interface to a string that contains the id
-	id, ok := arguments.(string)
-	if !ok {
-		panic( "Argument should be of type string" )
-	}
-
-	fmt.Println("deleteById:", id, "started")
 	collection := context.GetCollection()
+	fmt.Println( "DataEditor::deleteById collection", collection)
 	err := collection.Remove( bson.M{"id": id} )
 	if err != nil {
 		panic( err )
 	}
-	fmt.Println("deleteById:", id, "finished")
+	fmt.Println( "DataEditor::deleteById", id, "finished" )
 	return nil
 }
 
 //remove data from db base
 func (d *DataEditor) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
 
+	fmt.Println( "DataEditor::deleteAll arguments", arguments )
 	//context := appcontext.(Context)
 	//id := context.GetParameters()["id"] //get the id of the object to delete
 	//

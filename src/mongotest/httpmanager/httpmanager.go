@@ -38,13 +38,13 @@ func NewHttpManager( processor Processor ) HttpManager {
 //
 func (m *httpManagerObject) Register(registrable Registrable) {
 
-	fmt.Println( "Registering: " + reflect.TypeOf(registrable).String())
+	fmt.Println( "HttpManager::Register: " + reflect.TypeOf(registrable).String())
 
 	//Loop through all the routes
 	for _, handler := range registrable.GetHttpRouterHandlers() {
 
 		handler.(*httpRouterHandlerObject).processor = m.processor //set the application main algorithm
-		fmt.Println( "Registering handler: " + reflect.TypeOf(handler).String())
+		fmt.Println( "HttpManager::Registering handler: " + reflect.TypeOf(handler).String())
 
 		//Cache the handler for use in the execute when the request comes in
 		m.routingMap = append( m.routingMap, handler )
@@ -53,7 +53,7 @@ func (m *httpManagerObject) Register(registrable Registrable) {
 		url := handler.GetURL()
 		m.router.Handle(url, handler).Methods( "OPTIONS" ) //options must always be set for CORS to work
 		for _, endPoint := range handler.GetEndPointMethods() {
-			fmt.Println( "Registering endpoint:", url, endPoint )
+			fmt.Println( "HttpManager::Registering endpoint:", url, endPoint )
 			m.router.Handle(url, handler).Methods( endPoint.GetHttpMethod() )
 		}
 	}
