@@ -91,8 +91,11 @@ func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(conte
 		panic(collection)
 	}
 
+	wrapper := NewCollectionWrapper( collection )
+	//wrapper := &Collection{collection:collection}
+
 	//execute the acton function
-	contextHolder.GetMongoDBContext().SetCollection( collection )
+	contextHolder.GetMongoDBContext().SetCollection( wrapper )
 	result := action(contextHolder, arguments)
 
 	return result;

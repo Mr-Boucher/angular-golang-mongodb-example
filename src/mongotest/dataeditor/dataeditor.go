@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"reflect"
 
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/rs/xid"
 
 	"encoding/json"
 
 	"../httpmanager"
+	"../mongodbmanager"
 )
 
 const(
@@ -20,7 +20,7 @@ const(
 //
 type Context interface {
 	GetParameters() map[string]string
-	GetCollection() *mgo.Collection
+	GetCollection() *mongodbmanager.Collection
 }
 
 //

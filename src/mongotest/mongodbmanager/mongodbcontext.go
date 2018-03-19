@@ -12,11 +12,11 @@ type ContextHolder interface {
 
 //
 type MongoDBContext interface {
-	GetCollection() *mgo.Collection
+	GetCollection() *Collection
 	GetSession() *mgo.Session
 	GetConfiguration() *MongoDBConfiguration
 
-	SetCollection( *mgo.Collection )
+	SetCollection( *Collection )
 	SetSession( *mgo.Session )
 	SetConfiguration( *MongoDBConfiguration )
 }
@@ -25,27 +25,27 @@ type MongoDBContext interface {
 type MongoDBContextObject struct {
 	configuration *MongoDBConfiguration
 	session       *mgo.Session
-	collection    *mgo.Collection
+	collection    *Collection
 }
 
-func (co *MongoDBContextObject ) GetCollection() *mgo.Collection {
+func (co *MongoDBContextObject ) GetCollection() *Collection {
 	return co.collection
+}
+
+func (co *MongoDBContextObject ) SetCollection( collection *Collection ) {
+	co.collection = collection
 }
 
 func (co *MongoDBContextObject ) GetSession() *mgo.Session {
 	return co.session
 }
 
-func (co *MongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
-	return co.configuration
-}
-
-func (co *MongoDBContextObject ) SetCollection( collection *mgo.Collection ) {
-	co.collection = collection
-}
-
 func (co *MongoDBContextObject ) SetSession( session *mgo.Session ) {
 	co.session = session
+}
+
+func (co *MongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
+	return co.configuration
 }
 
 func (co *MongoDBContextObject ) SetConfiguration(configuration *MongoDBConfiguration ) {
