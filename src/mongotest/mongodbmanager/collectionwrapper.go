@@ -8,15 +8,16 @@ import (
 //
 type Collection struct {
 	collection *mgo.Collection
+	monitorCollection *mgo.Collection
+	mongoOperationCollection *mgo.Collection
 }
 
-
-func NewCollectionWrapper( collection *mgo.Collection ) *Collection {
-	return &Collection{collection:collection}
+//Constructor
+func NewCollectionWrapper( collection *mgo.Collection, monitorCollection *mgo.Collection, mongoOperationCollection *mgo.Collection ) *Collection {
+	return &Collection{collection:collection, monitorCollection:monitorCollection, mongoOperationCollection:mongoOperationCollection}
 }
 
-
-//// With returns a copy of c that uses session s.
+// With returns a copy of c that uses session s.
 //func (c *Collection) With(s *mgo.Session) *mgo.Collection {
 //	result := c.collection.With( s )
 //	return result

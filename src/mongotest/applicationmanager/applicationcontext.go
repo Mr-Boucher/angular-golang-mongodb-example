@@ -3,6 +3,7 @@ package applicationmanager
 import(
 	"../httpmanager"
 	"../mongodbmanager"
+	"gopkg.in/mgo.v2"
 )
 
 //
@@ -42,6 +43,6 @@ func (ac *ApplicationContext) GetConfiguration() *ApplicationConfiguration {
 }
 
 //
-func (ac *ApplicationContext) GetCollection() *mongodbmanager.Collection {
+func (ac *ApplicationContext) GetCollection() *mgo.Collection {
 	return ac.mongoDBContext.GetCollection()
 }

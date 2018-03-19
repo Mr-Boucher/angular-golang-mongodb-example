@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 
 	"../httpmanager"
-	"../mongodbmanager"
+	"gopkg.in/mgo.v2"
 )
 
 const(
@@ -20,7 +20,7 @@ const(
 //
 type Context interface {
 	GetParameters() map[string]string
-	GetCollection() *mongodbmanager.Collection
+	GetCollection() *mgo.Collection
 }
 
 //

@@ -5,6 +5,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"crypto/tls"
 	"net"
+	"time"
 )
 
 type ActionArgument interface{} //arguments for different actions
@@ -72,6 +73,7 @@ func (db *MongoDBManager) CleanupContext(contextHolder ContextHolder) {
 //Method handling framework calls to mongoDB this method will create and destroy all resources needed
 //to work with mongoDB it will perform the action function and return the results
 func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(context interface{}, arguments interface{}) interface{}, arguments interface{}) interface{} {
+	startTime := float64(time.Now().UnixNano() / int64(time.Millisecond))
 	fmt.Println("MongoDBManager::Context:", contextHolder )
 
 	//
@@ -91,12 +93,23 @@ func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(conte
 		panic(collection)
 	}
 
-	wrapper := NewCollectionWrapper( collection )
-	//wrapper := &Collection{collection:collection}
+	//Open the monitoring collection, create is does not exist
+	//monitorCollection := database.C("monitoring")
+	//if collection == nil {
+	//	fmt.Println( "Creating monitoring collection" )
+	//}
+
+	//Wrap the collection to decorate it with other features
+	//wrapper := NewCollectionWrapper( collection, nil, nil )
 
 	//execute the acton function
-	contextHolder.GetMongoDBContext().SetCollection( wrapper )
+	contextHolder.GetMongoDBContext().SetCollection( collection )
 	result := action(contextHolder, arguments)
+
+	endTime := float64(time.Now().UnixNano() / int64(time.Millisecond))
+	duration := endTime - startTime
+	//fmt.Println( "Query", query , "took", duration )
+	fmt.Println( "Query" , "took", duration )
 
 	return result;
 }
