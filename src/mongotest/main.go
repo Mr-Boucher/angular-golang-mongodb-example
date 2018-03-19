@@ -22,7 +22,7 @@ func main() {
 	fmt.Println(strings.Join(os.Args, " "))
 
 	//create the context
-	appconfig := *applicationmanager.NewApplicationConfiguration( httpConnectionDefault, mongoDBDefault )
+	appconfig := applicationmanager.NewApplicationConfiguration( httpConnectionDefault, mongoDBDefault )
 
 	//
 	manager := applicationmanager.NewApplicationManager( appconfig )

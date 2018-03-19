@@ -16,7 +16,7 @@ type ContextHolder interface {
 
 //
 type ApplicationContext struct {
-	configuration *ApplicationConfiguration
+	configuration ApplicationConfiguration
 	parameters map[string]string
 	httpContext *httpmanager.HttpContext
 	mongoDBContext mongodbmanager.MongoDBContext
@@ -38,7 +38,7 @@ func (ac *ApplicationContext) GetParameters() map[string]string {
 }
 
 //
-func (ac *ApplicationContext) GetConfiguration() *ApplicationConfiguration {
+func (ac *ApplicationContext) GetConfiguration() ApplicationConfiguration {
 	return ac.configuration
 }
 

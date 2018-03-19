@@ -20,7 +20,7 @@ type ApplicationManager interface {
 type applicationManagerObject struct {
 	nextId int
 	registered map[int]Registrable
-	configuration *ApplicationConfiguration
+	configuration ApplicationConfiguration
 	httpManager httpmanager.HttpManager
 	mongoDBManager *mongodbmanager.MongoDBManager
 }
@@ -30,10 +30,10 @@ func NewApplicationManager( configuration ApplicationConfiguration ) Application
 	fmt.Println( "ApplicationManager::ApplicationConfiguration", configuration  )
 	m := applicationManagerObject{}
 	m.registered = make(map[int]Registrable)
-	m.configuration = &configuration
+	m.configuration = configuration
 	//Register with the http manager so it listens to the correct endpoints
 	m.httpManager = httpmanager.NewHttpManager( &m )
-	m.mongoDBManager = mongodbmanager.NewMongoDBManager( configuration.mongoDBConfiguration )
+	m.mongoDBManager = mongodbmanager.NewMongoDBManager( configuration.GetMongoDBConfiguration() )
 	fmt.Println( "ApplicationManager::NewApplicationManager", m  )
 	return &m
 }
@@ -53,7 +53,7 @@ func (m *applicationManagerObject) Register( registrable Registrable ) {
 func (m *applicationManagerObject) Start( ) {
 	//start up server execution will wait here until the server is shutdown
 	fmt.Println( "ApplicationManager::Start"  )
-	m.httpManager.Start( m.configuration.httpConnection );
+	m.httpManager.Start( m.configuration.GetHttpConnection() );
 }
 
 //This is the main call back method form all http requests
@@ -71,8 +71,9 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 	context.parameters = httpcontext.Params
 
 	fmt.Println("ApplicationManager::Execute GetConfiguration:", context.mongoDBContext.GetConfiguration())
-	fmt.Println("ApplicationManager::Execute SetConfiguration:", context.configuration.mongoDBConfiguration)
-	context.mongoDBContext.SetConfiguration( &context.configuration.mongoDBConfiguration )
+	fmt.Println("ApplicationManager::Execute SetConfiguration:", context.configuration.GetMongoDBConfiguration())
+	tmp := context.configuration.GetMongoDBConfiguration()
+	context.mongoDBContext.SetConfiguration( &tmp )
 	fmt.Println("ApplicationManager::Execute GetConfiguration:", context.mongoDBContext.GetConfiguration())
 	fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext() )
 	fmt.Println("ApplicationManager::Execute MongoConfiguration:", context.mongoDBContext.GetConfiguration() )
