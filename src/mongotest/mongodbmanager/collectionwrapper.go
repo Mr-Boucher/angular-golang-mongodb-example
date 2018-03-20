@@ -3,18 +3,42 @@ package mongodbmanager
 import (
 	"gopkg.in/mgo.v2"
 	"fmt"
+	"gopkg.in/mgo.v2/bson"
+	"bytes"
 )
 
+type CollectionWrapper interface {
+	Find(query map[string]string) *mgo.Query
+	Insert(docs ...interface{}) error
+	Remove(selector interface{}) error
+	Update(selector interface{}, update interface{}) error
+	GetQueryString() string
+}
+
 //
-type Collection struct {
+type collectionObj struct {
 	collection *mgo.Collection
-	monitorCollection *mgo.Collection
-	mongoOperationCollection *mgo.Collection
+	queryString string
 }
 
 //Constructor
-func NewCollectionWrapper( collection *mgo.Collection, monitorCollection *mgo.Collection, mongoOperationCollection *mgo.Collection ) *Collection {
-	return &Collection{collection:collection, monitorCollection:monitorCollection, mongoOperationCollection:mongoOperationCollection}
+func NewCollectionWrapper( collection *mgo.Collection ) CollectionWrapper {
+	return &collectionObj{collection:collection}
+}
+
+//getters
+func (c *collectionObj) GetQueryString() string{
+	return c.queryString
+}
+
+
+//
+func createKeyValuePairs(m map[string]string) string {
+	b := new(bytes.Buffer)
+	for key, value := range m {
+		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
+	}
+	return b.String()
 }
 
 // With returns a copy of c that uses session s.
@@ -48,8 +72,15 @@ func NewCollectionWrapper( collection *mgo.Collection, monitorCollection *mgo.Co
 //	return result
 //}
 
-func (c *Collection) Find(query interface{}) *mgo.Query {
-	result := c.collection.Find( query )
+func (c *collectionObj) Find(query map[string]string) *mgo.Query {
+	result := c.collection.Find( bson.M{} )
+	queryData := make(map[string]string)
+	queryData["Query Type"] = "Find"
+	for key, value := range query {
+		queryData[key] = value
+	}
+
+	c.queryString = createKeyValuePairs( queryData )
 	return result
 }
 
@@ -73,16 +104,16 @@ func (c *Collection) Find(query interface{}) *mgo.Query {
 //	return result
 //}
 
-func (c *Collection) Insert(docs ...interface{}) error {
+func (c *collectionObj) Insert(docs ...interface{}) error {
  	fmt.Println( "CollectionWrapper::Overriden Insert" )
-	result := c.collection.Insert( docs )
+	result := c.collection.Insert( docs[0] ) //take the 0th element for no obvious reason
 	return result
 }
 
-//func (c *Collection) Update(selector interface{}, update interface{}) error {
-//	result := c.collection.Update( selector, update )
-//	return result
-//}
+func (c *collectionObj) Update(selector interface{}, update interface{}) error {
+	result := c.collection.Update( selector, update )
+	return result
+}
 //
 //func (c *Collection) UpdateId(id interface{}, update interface{}) error {
 //	result := c.collection.UpdateId( id, update )
@@ -104,7 +135,7 @@ func (c *Collection) Insert(docs ...interface{}) error {
 //	return result, err
 //}
 //
-func (c *Collection) Remove(selector interface{}) error {
+func (c *collectionObj) Remove(selector interface{}) error {
 	result := c.collection.Remove(selector)
 	return result
 }

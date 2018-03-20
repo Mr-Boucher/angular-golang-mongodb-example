@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 
 	"../httpmanager"
-	"gopkg.in/mgo.v2"
+	"../mongodbmanager"
 )
 
 const(
@@ -20,7 +20,7 @@ const(
 //
 type Context interface {
 	GetParameters() map[string]string
-	GetCollection() *mgo.Collection
+	GetCollection() mongodbmanager.CollectionWrapper
 }
 
 //
@@ -33,7 +33,7 @@ type DataEditor interface {
 }
 
 //
-type DataEditorObject struct {
+type dataEditorObject struct {
 	id int
 }
 
@@ -46,12 +46,12 @@ type TestData struct {
 
 //
 func NewEditor( ) DataEditor {
-	config := DataEditorObject{}
+	config := dataEditorObject{}
 	return &config
 }
 
 //GetHttpRouterHandlers() meets the interface
-func (d *DataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
+func (d *dataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 
 	//Create the call back methods for /Data
 	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
@@ -76,7 +76,7 @@ func (d *DataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandl
 }
 
 //
-func (d *DataEditorObject) Unmarshal( payload []byte ) (interface {}, error) {
+func (d *dataEditorObject) Unmarshal( payload []byte ) (interface {}, error) {
 
 	theData := TestData{}
 	err := json.Unmarshal(payload, &theData)
@@ -86,16 +86,16 @@ func (d *DataEditorObject) Unmarshal( payload []byte ) (interface {}, error) {
 	return theData, err
 }
 
-func (d *DataEditorObject) GetId() int {
+func (d *dataEditorObject) GetId() int {
 	return d.id
 }
 
-func (d *DataEditorObject) SetId( id int ) {
+func (d *dataEditorObject) SetId( id int ) {
 	d.id = id
 }
 
 //Load data from mongo returned as a []TestData
-func (d *DataEditorObject) load( appcontext interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) load( appcontext interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println( "DataEditor::load arguments", arguments )
 	var results []TestData
@@ -104,7 +104,7 @@ func (d *DataEditorObject) load( appcontext interface{}, arguments interface{} )
 
 	//Load data
 	collection := context.GetCollection()
-	query := collection.Find(bson.M{})
+	query := collection.Find(nil)
 	query = query.Sort("value") //sort the data by its value
 
 	query.All(&results) //execute the query
@@ -120,7 +120,7 @@ func (d *DataEditorObject) load( appcontext interface{}, arguments interface{} )
 }
 
 ////remove data from db base
-func (d *DataEditorObject) create(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) create(appcontext interface{}, arguments interface{} ) interface{} {
 	fmt.Println( "DataEditor::create arguments", arguments )
 	context := appcontext.(Context)
 
@@ -156,7 +156,7 @@ func (d *DataEditorObject) create(appcontext interface{}, arguments interface{} 
 }
 
 //remove data from db base
-func (d *DataEditorObject) update(context interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) update(context interface{}, arguments interface{} ) interface{} {
 	fmt.Println( "DataEditor::update arguments", arguments )
 
 	//id, ok := arguments.(string)
@@ -171,7 +171,7 @@ func (d *DataEditorObject) update(context interface{}, arguments interface{} ) i
 }
 
 //remove data from db base
-func (d *DataEditorObject) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) deleteById(appcontext interface{}, arguments interface{} ) interface{} {
 	context := appcontext.(Context)
 	id := context.GetParameters()["id"] //get the id of the object to delete
 	fmt.Println( "DataEditor::deleteById", context.GetParameters(), "started" )
@@ -187,7 +187,7 @@ func (d *DataEditorObject) deleteById(appcontext interface{}, arguments interfac
 }
 
 //remove data from db base
-func (d *DataEditorObject) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) deleteAll(appcontext interface{}, arguments interface{} ) interface{} {
 
 	fmt.Println( "DataEditor::deleteAll arguments", arguments )
 	//context := appcontext.(Context)

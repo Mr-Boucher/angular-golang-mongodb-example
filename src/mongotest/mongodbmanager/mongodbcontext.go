@@ -12,43 +12,48 @@ type ContextHolder interface {
 
 //
 type MongoDBContext interface {
-	GetCollection() *mgo.Collection
+	GetCollection() CollectionWrapper
 	GetSession() *mgo.Session
 	GetConfiguration() *MongoDBConfiguration
 
-	SetCollection( *mgo.Collection )
+	SetCollection( CollectionWrapper )
 	SetSession( *mgo.Session )
 	SetConfiguration( *MongoDBConfiguration )
 }
 
 //
-type MongoDBContextObject struct {
+type mongoDBContextObject struct {
 	configuration *MongoDBConfiguration
 	session       *mgo.Session
-	collection    *mgo.Collection
+	collection    CollectionWrapper
 }
 
-func (co *MongoDBContextObject ) GetCollection() *mgo.Collection {
+//Constructor
+func NewMongoDBContext() MongoDBContext {
+	return &mongoDBContextObject{}
+}
+
+func (co *mongoDBContextObject ) GetCollection() CollectionWrapper {
 	return co.collection
 }
 
-func (co *MongoDBContextObject ) SetCollection( collection *mgo.Collection ) {
+func (co *mongoDBContextObject ) SetCollection( collection CollectionWrapper ) {
 	co.collection = collection
 }
 
-func (co *MongoDBContextObject ) GetSession() *mgo.Session {
+func (co *mongoDBContextObject ) GetSession() *mgo.Session {
 	return co.session
 }
 
-func (co *MongoDBContextObject ) SetSession( session *mgo.Session ) {
+func (co *mongoDBContextObject ) SetSession( session *mgo.Session ) {
 	co.session = session
 }
 
-func (co *MongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
+func (co *mongoDBContextObject ) GetConfiguration() *MongoDBConfiguration {
 	return co.configuration
 }
 
-func (co *MongoDBContextObject ) SetConfiguration(configuration *MongoDBConfiguration ) {
+func (co *mongoDBContextObject ) SetConfiguration(configuration *MongoDBConfiguration ) {
 	fmt.Println( "MongoDBContext::SetConfiguration to", configuration )
 	co.configuration = configuration
 }

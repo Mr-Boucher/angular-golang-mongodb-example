@@ -67,7 +67,7 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 	context := ApplicationContext{}
 	context.configuration = m.configuration
 	context.httpContext = &httpcontext
-	context.mongoDBContext = &mongodbmanager.MongoDBContextObject{}
+	context.mongoDBContext = mongodbmanager.NewMongoDBContext()
 	context.parameters = httpcontext.Params
 
 	fmt.Println("ApplicationManager::Execute GetConfiguration:", context.mongoDBContext.GetConfiguration())

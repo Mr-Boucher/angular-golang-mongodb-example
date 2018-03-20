@@ -3,7 +3,6 @@ package applicationmanager
 import(
 	"../httpmanager"
 	"../mongodbmanager"
-	"gopkg.in/mgo.v2"
 )
 
 //
@@ -11,7 +10,7 @@ type ContextHolder interface {
 	GetMongoDBContext() mongodbmanager.MongoDBContext
 	GetHttpContext() *httpmanager.HttpContext
 	GetParameters() map[string]string
-	GetCollection() *mongodbmanager.Collection
+	GetCollection() mongodbmanager.CollectionWrapper
 }
 
 //
@@ -43,6 +42,6 @@ func (ac *ApplicationContext) GetConfiguration() ApplicationConfiguration {
 }
 
 //
-func (ac *ApplicationContext) GetCollection() *mgo.Collection {
+func (ac *ApplicationContext) GetCollection() mongodbmanager.CollectionWrapper {
 	return ac.mongoDBContext.GetCollection()
 }
