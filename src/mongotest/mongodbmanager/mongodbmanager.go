@@ -108,8 +108,8 @@ func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(conte
 	result := action(contextHolder, arguments)
 	endTime := float64(time.Now().UnixNano() / int64(time.Millisecond))
 	duration := endTime - startTime
-	query := wrapper.GetQueryString()
-	fmt.Println( "Query", query , "took", duration )
+	queryString, queryType := wrapper.GetQueryInfo()
+	fmt.Println( queryType, "with", queryString , "took", duration, "milliseconds" )
 
 	return result;
 }

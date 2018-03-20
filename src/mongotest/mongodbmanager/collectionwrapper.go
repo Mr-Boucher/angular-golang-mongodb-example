@@ -12,33 +12,38 @@ type CollectionWrapper interface {
 	Insert(docs ...interface{}) error
 	Remove(selector interface{}) error
 	Update(selector interface{}, update interface{}) error
-	GetQueryString() string
+	GetQueryInfo() (string,string)
 }
 
 //
 type collectionObj struct {
 	collection *mgo.Collection
 	queryString string
+	queryType string
 }
 
 //Constructor
 func NewCollectionWrapper( collection *mgo.Collection ) CollectionWrapper {
-	return &collectionObj{collection:collection}
+	return &collectionObj{collection:collection, queryString:"Empty Query", queryType:"Unknown"}
 }
 
 //getters
-func (c *collectionObj) GetQueryString() string{
-	return c.queryString
+func (c *collectionObj) GetQueryInfo() (string,string){
+	return c.queryString, c.queryType
 }
 
-
 //
-func createKeyValuePairs(m map[string]string) string {
+func (c *collectionObj) createKeyValuePairs(m map[string]string) string {
 	b := new(bytes.Buffer)
 	for key, value := range m {
 		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
 	}
-	return b.String()
+
+	result := c.queryString
+	if b.Len() > 0 {
+		result = b.String()
+	}
+	return result
 }
 
 // With returns a copy of c that uses session s.
@@ -75,12 +80,12 @@ func createKeyValuePairs(m map[string]string) string {
 func (c *collectionObj) Find(query map[string]string) *mgo.Query {
 	result := c.collection.Find( bson.M{} )
 	queryData := make(map[string]string)
-	queryData["Query Type"] = "Find"
 	for key, value := range query {
 		queryData[key] = value
 	}
 
-	c.queryString = createKeyValuePairs( queryData )
+	c.queryString = c.createKeyValuePairs( queryData )
+	c.queryType = "Find"
 	return result
 }
 
