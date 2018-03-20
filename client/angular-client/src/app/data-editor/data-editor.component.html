@@ -7,7 +7,8 @@
   <div class="data_space"></div>
   <div class="data_view">
     <h2>
-      <button class="data_button" (click)="refresh()">Load</button>
+      <button class="data_button" (click)="search(search_criteria.value)">Search</button>
+      <input #search_criteria id="search_criteria">
     </h2>
     <ul *ngIf="(data) else noData">
       <li *ngFor="let item of data">

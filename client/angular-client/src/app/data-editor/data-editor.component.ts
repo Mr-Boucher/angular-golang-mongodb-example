@@ -23,12 +23,12 @@ export class DataEditorComponent implements OnInit {
         console.log("subscribe result")
       },
       err => console.error(err),
-      () => console.log('done loading courses')
+      () => console.log('done loading')
     );
   }
 
-  refresh($event):void {
-    this._dataEditorService.load();
+  search( data, $event):void {
+    this._dataEditorService.search( data );
   }
 
   add( data, $event ):void {

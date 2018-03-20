@@ -29,7 +29,7 @@ export class DataEditorService {
    * @param httpService
    */
   constructor(private httpService:HttpService) {
-    this.load();
+    this.search("");
   }
 
   /**
@@ -44,9 +44,10 @@ export class DataEditorService {
   /**
    *
    */
-  load():void {
-    console.log("load data");
-    this.httpService.load(this.objectUrl, this.subject, this._data);
+  search( searchCriteria:string ):void {
+    console.log("Search Criteria" + searchCriteria );
+    let sc = new Array(searchCriteria)
+    this.httpService.load(this.objectUrl, this.subject, sc );
   }
 
   /**
