@@ -11,6 +11,8 @@ import (
 
 	"../httpmanager"
 	"../mongodbmanager"
+
+	"regexp"
 )
 
 const(
@@ -36,6 +38,7 @@ type DataEditor interface {
 //
 type dataEditorObject struct {
 	id int
+	regex *regexp.Regexp
 }
 
 //Test data format
@@ -47,7 +50,9 @@ type TestData struct {
 
 //
 func NewEditor( ) DataEditor {
-	config := dataEditorObject{}
+	regex, _ := regexp.Compile("{")
+
+	config := dataEditorObject{regex:regex}
 	return &config
 }
 
@@ -117,10 +122,18 @@ func (d *dataEditorObject) search( appcontext interface{}, arguments interface{}
 	var criteria bson.M
 	if len(searchCriteria) > 0 {
 		if len(searchCriteria[0]) > 0 {
+			//validate search criteria does not contain
+			hasInvalidSearchCriteria := d.regex.MatchString(searchCriteria[0])
+			if hasInvalidSearchCriteria  {
+				panic( searchCriteria[0] + " contains invalid chars" )
+			}
+
+			//do the search
 			fmt.Println( "DataEditor::Search searchCriteria", searchCriteria[0] )
 			regex := bson.RegEx{}
-			regex.Pattern = "^" + searchCriteria[0]
-			regex.Options = "i"
+			searchType := "^" //starts with
+			regex.Pattern = searchType + searchCriteria[0] //
+			regex.Options = "i" //make search case-insensitive
 			criteria = bson.M{"value": regex }
 		}
 	}
