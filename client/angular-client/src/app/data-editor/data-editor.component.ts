@@ -27,6 +27,10 @@ export class DataEditorComponent implements OnInit {
     );
   }
 
+  load( ): void {
+    this._dataEditorService.load();
+  }
+
   search( data, $event):void {
     this._dataEditorService.search( data );
   }

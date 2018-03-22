@@ -10,6 +10,7 @@ type HttpContext struct {
 	Request *http.Request
 	RouteHandler HttpRouterHandler
 	Params map[string]string
+	QueryParams map[string][]string
 }
 
 //

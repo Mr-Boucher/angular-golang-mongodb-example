@@ -4,11 +4,11 @@ import (
 	"gopkg.in/mgo.v2"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
-	"bytes"
+	"../utils"
 )
 
 type CollectionWrapper interface {
-	Find(query map[string]string) *mgo.Query
+	Find(query bson.M) *mgo.Query
 	Insert(docs ...interface{}) error
 	Remove(selector interface{}) error
 	Update(selector interface{}, update interface{}) error
@@ -30,20 +30,6 @@ func NewCollectionWrapper( collection *mgo.Collection ) CollectionWrapper {
 //getters
 func (c *collectionObj) GetQueryInfo() (string,string){
 	return c.queryString, c.queryType
-}
-
-//
-func (c *collectionObj) createKeyValuePairs(m map[string]string) string {
-	b := new(bytes.Buffer)
-	for key, value := range m {
-		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
-	}
-
-	result := c.queryString
-	if b.Len() > 0 {
-		result = b.String()
-	}
-	return result
 }
 
 // With returns a copy of c that uses session s.
@@ -77,14 +63,14 @@ func (c *collectionObj) createKeyValuePairs(m map[string]string) string {
 //	return result
 //}
 
-func (c *collectionObj) Find(query map[string]string) *mgo.Query {
-	result := c.collection.Find( bson.M{} )
+func (c *collectionObj) Find(query bson.M) *mgo.Query {
+	result := c.collection.Find( query )
 	queryData := make(map[string]string)
 	for key, value := range query {
-		queryData[key] = value
+		queryData[key] = fmt.Sprintf("%s", value)
 	}
 
-	c.queryString = c.createKeyValuePairs( queryData )
+	c.queryString = utils.CreateKeyValuePairs( queryData, c.queryString )
 	c.queryType = "Find"
 	return result
 }

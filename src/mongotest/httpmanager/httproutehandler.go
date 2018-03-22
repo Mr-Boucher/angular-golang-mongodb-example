@@ -38,18 +38,26 @@ func (h *httpRouterHandlerObject) GetEndPointMethods() []HttpMethodFunction {
 }
 
 //
-func (h *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("HttpRouterHandler:ServeHTTP path", request.URL.Path)
+func (handler *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("HttpRouterHandler:ServeHTTP Method", request.Method)
+	fmt.Println("HttpRouterHandler:ServeHTTP Path", request.URL.Path)
+	fmt.Println("HttpRouterHandler:ServeHTTP Params", mux.Vars(request))
 
-	fmt.Println("HttpRouterHandler:ServeHTTP params", mux.Vars(request))
+	request.ParseForm() //make sure the values are filled in otherwise request.Form and request.PostForm are empty
+	for key, value := range request.Form {
+		fmt.Println("HttpRouterHandler:ServeHTTP Form ", key, "=", value )
+	}
+	for key, value := range request.PostForm {
+		fmt.Println("HttpRouterHandler:ServeHTTP PostForm ", key, "=", value )
+	}
 
 	//Create the execution context
-	context := HttpContext{h.processorId, writer, request, h, mux.Vars(request) }
-	h.setHeaders(context)
+	context := HttpContext{handler.processorId, writer, request, handler, mux.Vars(request), request.Form }
+	handler.setHeaders(context)
 
 	//Call the action function requests
 	if context.Request.Method != "OPTIONS" {
-		h.processor.Execute(context)
+		handler.processor.Execute(context)
 	}
 }
 

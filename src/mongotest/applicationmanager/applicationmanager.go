@@ -64,11 +64,12 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 	fmt.Println("ApplicationManager::Execute ApplicationConfiguration:", m.configuration)
 
 	//Create the application context needed by all the managers
-	context := ApplicationContext{}
+	context := applicationContext{}
 	context.configuration = m.configuration
 	context.httpContext = &httpcontext
 	context.mongoDBContext = mongodbmanager.NewMongoDBContext()
 	context.parameters = httpcontext.Params
+	context.sliceParameters = httpcontext.QueryParams
 
 	fmt.Println("ApplicationManager::Execute GetConfiguration:", context.mongoDBContext.GetConfiguration())
 	fmt.Println("ApplicationManager::Execute SetConfiguration:", context.configuration.GetMongoDBConfiguration())

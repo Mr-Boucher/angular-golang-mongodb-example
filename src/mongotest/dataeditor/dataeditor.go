@@ -20,6 +20,7 @@ const(
 //
 type Context interface {
 	GetParameters() map[string]string
+	GetSliceParameters() map[string][]string
 	GetCollection() mongodbmanager.CollectionWrapper
 }
 
@@ -55,11 +56,15 @@ func (d *dataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandl
 
 	//Create the call back methods for /Data
 	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
-	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "GET", d.load ) )
+	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "GET", d.search ) )
 	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "POST", d.create ) )
 	dataMethodFunctions = append( dataMethodFunctions, httpmanager.NewHttpMethodFunction( "DELETE", d.deleteAll ) )
 	dataMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl, dataMethodFunctions )
 
+	//Search
+	dataSearchMethodFunctions := []httpmanager.HttpMethodFunction{}
+	dataSearchMethodFunctions = append( dataSearchMethodFunctions, httpmanager.NewHttpMethodFunction( "GET", d.search ) )
+	dataSearchMethodHandler := httpmanager.NewHttpRouteHandler( d.id, baseUrl + "?search=[a-zA-Z0-9]+}", dataSearchMethodFunctions )
 
 	//add the backs method for /Data/id
 	dataIdMethodFunctions := []httpmanager.HttpMethodFunction{}
@@ -70,6 +75,7 @@ func (d *dataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandl
 	//
 	routers := []httpmanager.HttpRouterHandler{}
 	routers = append( routers, dataMethodHandler )
+	routers = append( routers, dataSearchMethodHandler )
 	routers = append( routers, dataIdMethodHandler )
 
 	return routers
@@ -95,16 +101,30 @@ func (d *dataEditorObject) SetId( id int ) {
 }
 
 //Load data from mongo returned as a []TestData
-func (d *dataEditorObject) load( appcontext interface{}, arguments interface{} ) interface{} {
+func (d *dataEditorObject) search( appcontext interface{}, arguments interface{} ) interface{} {
 
-	fmt.Println( "DataEditor::load arguments", arguments )
+	fmt.Println( "DataEditor::Search", arguments )
 	var results []TestData
 
 	context := appcontext.(Context)
 
+	//Get the search criteria
+	searchCriteria := context.GetSliceParameters()["search"]
+	fmt.Println( "DataEditor::Search searchCriteria", searchCriteria )
+
 	//Load data
 	collection := context.GetCollection()
-	query := collection.Find(nil)
+	var criteria bson.M
+	if len(searchCriteria) > 0 {
+		if len(searchCriteria[0]) > 0 {
+			fmt.Println( "DataEditor::Search searchCriteria", searchCriteria[0] )
+			regex := bson.RegEx{}
+			regex.Pattern = "^" + searchCriteria[0]
+			regex.Options = "i"
+			criteria = bson.M{"value": regex }
+		}
+	}
+	query := collection.Find(criteria)
 	query = query.Sort("value") //sort the data by its value
 
 	query.All(&results) //execute the query
@@ -114,7 +134,7 @@ func (d *dataEditorObject) load( appcontext interface{}, arguments interface{} )
 		fmt.Println(index, "id:", result.Id, "value:", result.Value)
 	}
 
-	fmt.Println("Finished loading data")
+	fmt.Println("Finished Search data")
 
 	return results
 }

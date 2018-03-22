@@ -10,38 +10,45 @@ type ContextHolder interface {
 	GetMongoDBContext() mongodbmanager.MongoDBContext
 	GetHttpContext() *httpmanager.HttpContext
 	GetParameters() map[string]string
+	GetSliceParameters() map[string][]string
 	GetCollection() mongodbmanager.CollectionWrapper
 }
 
 //
-type ApplicationContext struct {
+type applicationContext struct {
 	configuration ApplicationConfiguration
 	parameters map[string]string
+	sliceParameters map[string][]string
 	httpContext *httpmanager.HttpContext
 	mongoDBContext mongodbmanager.MongoDBContext
 }
 
 //
-func (ac *ApplicationContext) GetMongoDBContext() mongodbmanager.MongoDBContext {
+func (ac *applicationContext) GetMongoDBContext() mongodbmanager.MongoDBContext {
 	return ac.mongoDBContext
 }
 
 //
-func (ac *ApplicationContext) GetHttpContext() *httpmanager.HttpContext {
+func (ac *applicationContext) GetHttpContext() *httpmanager.HttpContext {
 	return ac.httpContext
 }
 
 //
-func (ac *ApplicationContext) GetParameters() map[string]string {
+func (ac *applicationContext) GetParameters() map[string]string {
 	return ac.parameters
 }
 
 //
-func (ac *ApplicationContext) GetConfiguration() ApplicationConfiguration {
+func (ac *applicationContext) GetSliceParameters() map[string][]string {
+	return ac.sliceParameters
+}
+
+//
+func (ac *applicationContext) GetConfiguration() ApplicationConfiguration {
 	return ac.configuration
 }
 
 //
-func (ac *ApplicationContext) GetCollection() mongodbmanager.CollectionWrapper {
+func (ac *applicationContext) GetCollection() mongodbmanager.CollectionWrapper {
 	return ac.mongoDBContext.GetCollection()
 }
