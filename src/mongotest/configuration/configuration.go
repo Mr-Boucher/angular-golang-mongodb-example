@@ -88,9 +88,10 @@ func (d *ConfigurationObject) Unmarshal( payload []byte ) (interface {}, error) 
 }
 
 //
-func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{} ) interface{} {
+func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{} ) (interface{}, error) {
 	fmt.Println( "ConfigurationData::load arguments", arguments )
 	var results []ConfigurationData
+	var err error
 
 	context := appcontext.(Context)
 
@@ -108,12 +109,13 @@ func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{
 
 	fmt.Println("Finished loading data")
 
-	return results
+	return results, err
 }
 
 ////remove data from db base
-func (d *ConfigurationObject) update(context interface{}, arguments interface{} ) interface{} {
+func (d *ConfigurationObject) update(context interface{}, arguments interface{} ) (interface{}, error) {
 	fmt.Println( "ConfigurationData::update arguments", arguments )
+	var err error
 
 	//id, ok := arguments.(string)
 	//if !ok {
@@ -123,7 +125,7 @@ func (d *ConfigurationObject) update(context interface{}, arguments interface{} 
 	//collection := context.(*mgo.Collection)
 	//collection.Remove( bson.M{"id": id} )
 	fmt.Println("update:", "finished")
-	return nil
+	return nil, err
 }
 
 

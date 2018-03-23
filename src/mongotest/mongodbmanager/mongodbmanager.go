@@ -72,9 +72,9 @@ func (db *MongoDBManager) CleanupContext(contextHolder ContextHolder) {
 
 //Method handling framework calls to mongoDB this method will create and destroy all resources needed
 //to work with mongoDB it will perform the action function and return the results
-func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(context interface{}, arguments interface{}) interface{}, arguments interface{}) interface{} {
+func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(context interface{}, arguments interface{}) (interface{}, error), arguments interface{}) (interface{}, error) {
 
-	fmt.Println("MongoDBManager::Context:", contextHolder )
+	fmt.Println("MongoDBManager::Execute:", contextHolder )
 
 	//
 	databaseConnectionInfo := contextHolder.GetMongoDBContext().GetConfiguration()
@@ -105,12 +105,15 @@ func (db *MongoDBManager) Execute(contextHolder ContextHolder, action func(conte
 
 	//execute the acton function
 	startTime := float64(time.Now().UnixNano() / int64(time.Millisecond))
-	result := action(contextHolder, arguments)
+	result, err := action(contextHolder, arguments)
 	endTime := float64(time.Now().UnixNano() / int64(time.Millisecond))
 	duration := endTime - startTime
 	queryString, queryType := wrapper.GetQueryInfo()
 	fmt.Println( queryType, "with", queryString , "took", duration, "milliseconds" )
 
-	return result;
+	if err != nil {
+		fmt.Println( "MongoDBManager::Execute", err )
+	}
+	return result, err;
 }
 

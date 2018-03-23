@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
-	"net/http"
-
 	"../httpmanager"
 	"../mongodbmanager"
 )
@@ -57,7 +55,7 @@ func (m *applicationManagerObject) Start( ) {
 }
 
 //This is the main call back method form all http requests
-func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext ) {
+func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext ) error {
 	fmt.Println("ApplicationManager::Execute httpContext", httpcontext)
 
 	//
@@ -95,40 +93,36 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 		//
 		theData, err = m.registered[context.httpContext.ProcessorId].Unmarshal( payload )
 		fmt.Println("ApplicationManager::Execute TheData:", theData )
-
-		if err != nil {
-			http.Error(context.httpContext.Writer, err.Error(), 500)
-			fmt.Println(err)
-			return
-		}
 	}
 
 	//find the correct end point
 	//TODO make this a map instead of list
-	fmt.Println("ApplicationManager::Execute Finding router:", context )
-	for _, method := range context.httpContext.RouteHandler.GetEndPointMethods() {
-		if method.GetHttpMethod() == context.httpContext.Request.Method {
-			fmt.Println("ApplicationManager::Execute Context:", context )
-			fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext() )
-			//Make sure the Mongo context is connected to the mongo configuration
-			m.mongoDBManager.InitContext( &context )
-			defer m.mongoDBManager.CleanupContext( &context ) //make sure the context for mongo is cleaned up
+	if err == nil {
+		fmt.Println("ApplicationManager::Execute Finding router:", context )
+		for _, method := range context.httpContext.RouteHandler.GetEndPointMethods() {
+			if method.GetHttpMethod() == context.httpContext.Request.Method {
+				fmt.Println("ApplicationManager::Execute Context:", context)
+				fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext())
+				//Make sure the Mongo context is connected to the mongo configuration
+				m.mongoDBManager.InitContext(&context)
+				defer m.mongoDBManager.CleanupContext(&context) //make sure the context for mongo is cleaned up
 
-			//call data store
-			result := m.mongoDBManager.Execute( &context, method.GetCallback(), theData )
+				//call data store
+				result, err := m.mongoDBManager.Execute(&context, method.GetCallback(), theData)
+				fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext())
 
-			if result != nil {
-				byteData, err := json.Marshal(result)
-				if err != nil {
-					panic(err)
+				var byteData []byte
+				if result != nil && err == nil {
+					byteData, err = json.Marshal(result)
+					context.httpContext.Writer.Write(byteData)
 				}
 
-				context.httpContext.Writer.Write(byteData)
+				break; //no point in continuing to loop it found the method
 			}
-
-			break; //no point in continuing to loop it found the method
 		}
 	}
+
+	return err
 }
 
 

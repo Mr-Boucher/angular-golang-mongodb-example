@@ -1,5 +1,5 @@
 package httpmanager
 
 type Processor interface {
-	Execute( HttpContext )
+	Execute( HttpContext ) error
 }

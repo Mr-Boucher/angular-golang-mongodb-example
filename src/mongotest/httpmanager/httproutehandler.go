@@ -39,6 +39,8 @@ func (h *httpRouterHandlerObject) GetEndPointMethods() []HttpMethodFunction {
 
 //
 func (handler *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	var err error
+
 	fmt.Println("HttpRouterHandler:ServeHTTP Method", request.Method)
 	fmt.Println("HttpRouterHandler:ServeHTTP Path", request.URL.Path)
 	fmt.Println("HttpRouterHandler:ServeHTTP Params", mux.Vars(request))
@@ -56,8 +58,14 @@ func (handler *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, re
 	handler.setHeaders(context)
 
 	//Call the action function requests
+
 	if context.Request.Method != "OPTIONS" {
 		handler.processor.Execute(context)
+	}
+
+	if err != nil {
+		http.Error(writer, err.Error(), 500)
+		fmt.Errorf("The Error: %s", err)
 	}
 }
 
