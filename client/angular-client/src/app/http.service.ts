@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Data} from "./data-editor/data-editor.service";
-import {Subject} from "rxjs/Subject";
+import {Subject} from "rxjs/subject";
+import {AlertComponent} from "./alert/alert.component";
 
 //HttpOptions are needed to make sure that all REST API pass basic security as well as browser CORS
 const httpOptions = {
@@ -21,7 +22,7 @@ export class HttpService {
 
   host = "http://localhost:8000/";
 
-  constructor(private httpClient:HttpClient) {
+  constructor(private httpClient:HttpClient, private alertComponent:AlertComponent) {
   }
 
   /**
@@ -34,18 +35,25 @@ export class HttpService {
   load(objectUrl:String, subject:Subject<any>, dataArray:any[]) {
     this.httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
       console.log("Received " + data);
-      dataArray.splice(0, dataArray.length); //empty the array so the ui does not show old values
+
+      //empty the array so the ui does not show old values
+      dataArray.splice(0, dataArray.length);
 
       //add the data[] elements to the dataArray
-      (<any[]>data).forEach(function (value) {
-        console.log(value);
-        dataArray.push(value);
-      });
-
+      if (data != null) {
+        (<any[]>data).forEach(function (value) {
+          console.log(value);
+          dataArray.push(value);
+        });
+      }
 
       //Emit the data to the subject so the data will refresh with the new value set
-      subject.next(dataArray); // emit your data
-    });
+      subject.next(dataArray);
+    },
+    err => {
+      console.log(err);
+      this.handleError(err);
+    } );
   }
 
   /**
@@ -106,5 +114,12 @@ export class HttpService {
         }
       }
     });
+  }
+
+  /**
+   *
+   * @param err*/
+  private handleError(err:any):void {
+    this.alertComponent.showIt = true
   }
 }

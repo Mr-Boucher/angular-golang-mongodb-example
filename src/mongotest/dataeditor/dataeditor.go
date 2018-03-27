@@ -61,28 +61,27 @@ func NewEditor() DataEditor {
 //GetHttpRouterHandlers() meets the interface
 func (d *dataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandler {
 
+	routers := []httpmanager.HttpRouterHandler{}
+
 	//Create the call back methods for /Data
 	dataMethodFunctions := []httpmanager.HttpMethodFunction{}
 	dataMethodFunctions = append(dataMethodFunctions, httpmanager.NewHttpMethodFunction("GET", d.search))
 	dataMethodFunctions = append(dataMethodFunctions, httpmanager.NewHttpMethodFunction("POST", d.create))
 	dataMethodFunctions = append(dataMethodFunctions, httpmanager.NewHttpMethodFunction("DELETE", d.deleteAll))
 	dataMethodHandler := httpmanager.NewHttpRouteHandler(d.id, baseUrl, dataMethodFunctions)
+	routers = append(routers, dataMethodHandler)
 
 	//Search
 	dataSearchMethodFunctions := []httpmanager.HttpMethodFunction{}
 	dataSearchMethodFunctions = append(dataSearchMethodFunctions, httpmanager.NewHttpMethodFunction("GET", d.search))
 	dataSearchMethodHandler := httpmanager.NewHttpRouteHandler(d.id, baseUrl + "?search=[a-zA-Z0-9]+}", dataSearchMethodFunctions)
+	routers = append(routers, dataSearchMethodHandler)
 
 	//add the backs method for /Data/id
 	dataIdMethodFunctions := []httpmanager.HttpMethodFunction{}
 	dataIdMethodFunctions = append(dataIdMethodFunctions, httpmanager.NewHttpMethodFunction("PUT", d.update))
 	dataIdMethodFunctions = append(dataIdMethodFunctions, httpmanager.NewHttpMethodFunction("DELETE", d.deleteById))
 	dataIdMethodHandler := httpmanager.NewHttpRouteHandler(d.id, baseUrl + "/{id:[a-z0-9]+}", dataIdMethodFunctions)
-
-	//
-	routers := []httpmanager.HttpRouterHandler{}
-	routers = append(routers, dataMethodHandler)
-	routers = append(routers, dataSearchMethodHandler)
 	routers = append(routers, dataIdMethodHandler)
 
 	return routers
@@ -122,7 +121,11 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 
 	//Load data
 	collection := context.GetCollection()
-	var criteria bson.M
+
+	//
+	var criteria bson.M = bson.M{} //default criteria is to return everything
+
+	//value searchCriteria is the is some
 	if len(searchCriteria) > 0 && len(searchCriteria[0]) > 0 {
 		//validate search criteria does not contain
 		hasInvalidSearchCriteria := d.regex.MatchString(searchCriteria[0])
@@ -131,8 +134,9 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 		} else {
 			//do the search
 			fmt.Println("DataEditor::Search searchCriteria", searchCriteria[0])
+
 			regex := bson.RegEx{}
-			searchType := "^" //starts with
+			searchType := "" //starts with
 			regex.Pattern = searchType + searchCriteria[0] //
 			regex.Options = "i" //make search case-insensitive
 			criteria = bson.M{"value": regex }
@@ -140,19 +144,20 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 	}
 
 	//Do the actual search in MongoDB
-	if err == nil { //make sure there are no errors before executing
+	if err == nil {
 		query := collection.Find(criteria)
 		query = query.Sort("value") //sort the data by its value
 
 		query.All(&results) //execute the query
 
 		//Display the data returned for debugging
+		fmt.Println("***********************Start of results***********************")
 		for index, result := range results {
 			fmt.Println(index, "id:", result.Id, "value:", result.Value)
 		}
+		fmt.Println("***********************End of results***********************")
+		fmt.Println("Finished Search data")
 	}
-
-	fmt.Println("Finished Search data")
 
 	return results, err
 }

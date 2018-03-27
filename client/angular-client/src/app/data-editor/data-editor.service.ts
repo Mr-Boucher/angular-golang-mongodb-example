@@ -2,7 +2,9 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import "rxjs/add/operator/map";
 import {Subject} from "rxjs/Subject";
-import { HttpService} from "../http.service";
+import {HttpService} from "../http.service";
+import {Observable} from "rxjs/Observable";
+import {catchError} from "rxjs/operators";
 
 /**
  * The object the service and component handle

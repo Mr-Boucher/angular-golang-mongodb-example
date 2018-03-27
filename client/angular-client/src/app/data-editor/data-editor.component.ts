@@ -11,6 +11,7 @@ import {Data, DataEditorService} from "./data-editor.service";
 export class DataEditorComponent implements OnInit {
 
   data: Data[];
+  private error;
 
   constructor(private _dataEditorService: DataEditorService) {
   }
@@ -20,10 +21,16 @@ export class DataEditorComponent implements OnInit {
     this._dataEditorService.data.subscribe(
       data => {
         this.data = data;
-        console.log("subscribe result")
+        console.log("subscribe result");
       },
-      err => console.error(err),
-      () => console.log('done loading')
+      err => {
+        this.error = err;
+        console.error(err);
+      },
+      () => {
+        console.log('done loading');
+      }
+
     );
   }
 

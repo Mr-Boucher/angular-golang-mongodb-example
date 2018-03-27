@@ -58,15 +58,15 @@ func (handler *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, re
 	handler.setHeaders(context)
 
 	//Call the action function requests
-
 	if context.Request.Method != "OPTIONS" {
-		handler.processor.Execute(context)
+		err = handler.processor.Execute(context)
+		fmt.Println("HttpRouterHandler::The Error:", err)
+		if err != nil {
+			http.Error(writer, err.Error(), 500)
+		}
 	}
 
-	if err != nil {
-		http.Error(writer, err.Error(), 500)
-		fmt.Errorf("The Error: %s", err)
-	}
+	fmt.Println("HttpRouterHandler:Finished", request.Method)
 }
 
 //Set headers to tell the client what is supported for this REST API

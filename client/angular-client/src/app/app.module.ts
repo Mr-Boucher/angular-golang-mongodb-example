@@ -9,21 +9,24 @@ import { DataEditorComponent } from './data-editor/data-editor.component';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { AppRoutingModule } from './app-routing.module';
 import {HttpService} from "./http.service";
+import {AlertComponent} from "./alert/alert.component";
 
 
 @NgModule({
   declarations: [
     AppComponent,
     DataEditorComponent,
-    ConfigurationComponent
+    ConfigurationComponent,
+    AlertComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    AppRoutingModule,
+    AppRoutingModule
   ],
-  providers: [HttpService],
+  providers: [HttpService, AlertComponent],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

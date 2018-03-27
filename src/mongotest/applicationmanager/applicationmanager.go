@@ -108,8 +108,10 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 				defer m.mongoDBManager.CleanupContext(&context) //make sure the context for mongo is cleaned up
 
 				//call data store
-				result, err := m.mongoDBManager.Execute(&context, method.GetCallback(), theData)
+				result, errX := m.mongoDBManager.Execute(&context, method.GetCallback(), theData)
+				err = errX
 				fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext())
+				fmt.Println("ApplicationManager::Execute The Error:", err)
 
 				var byteData []byte
 				if result != nil && err == nil {
@@ -122,6 +124,7 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 		}
 	}
 
+	fmt.Println("ApplicationManager::Execute The Error:", err)
 	return err
 }
 
