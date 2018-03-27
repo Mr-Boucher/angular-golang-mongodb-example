@@ -1,6 +1,6 @@
 <div class="dashboard">
   <h1 class="title">{{ title }}</h1>
-  <app-alert *ngIf="showIt" ></app-alert>
+  <app-alert *ngIf="hasErrors()"></app-alert>
   <nav class="nav-bar">
     <a routerLink="/data-editor" class="link">Editor</a>
     <a routerLink="/configuration" class="link">Configuration</a>

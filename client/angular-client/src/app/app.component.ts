@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import {DataEditorComponent} from "./data-editor/data-editor.component";
 import {ConfigurationComponent} from "./configuration/configuration.component";
+import {AlertComponent} from "./alert/alert.component";
+import {AlertService} from "./alert/alert.service";
 
 @Component({
   selector: 'app-root',
@@ -10,14 +12,10 @@ import {ConfigurationComponent} from "./configuration/configuration.component";
 export class AppComponent {
   title = 'Angular Data Editor using (Go)lang and MongoDB';
 
-  name = "old name";
-
-  showIt = false;
-  showModal() {
-    this.showIt = true;
+  constructor(private _alertService:AlertService) {
   }
-  closeModal(newName: string) {
-    this.showIt = false;
-    if (newName) this.name = newName;
+
+  hasErrors(): boolean  {
+    return this._alertService.hasErrors();
   }
 }

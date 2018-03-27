@@ -1,4 +1,5 @@
 import { Component, OnInit, Input, Output } from '@angular/core';
+import {AlertService} from "./alert.service";
 
 /**
  *
@@ -7,19 +8,39 @@ import { Component, OnInit, Input, Output } from '@angular/core';
   selector: 'app-alert',
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.css'],
-  providers: []
+  providers: [AlertService]
 })
 export class AlertComponent implements OnInit {
 
-  alert = "Testing";
-  showIt = false;
+  alert: String = "";
 
+  constructor( private _alertService: AlertService ) {
+  }
+
+  /**
+   *
+   */
   ngOnInit() {
-    // copy all inputs to avoid polluting them
     console.log("Alert::ngOnInit");
+    this._alertService.errors.subscribe(
+      alert => {
+        this.alert = alert;
+        console.log("subscribe result");
+      },
+      err => {
+        console.error(err);
+      },
+      () => {
+        console.log("done loading");
+      }
+    );
   }
 
   close() {
     console.log("Alert::close");
+  }
+
+  hasErrors(): boolean {
+    return alert.length > 0
   }
 }

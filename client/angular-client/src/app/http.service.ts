@@ -3,6 +3,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Data} from "./data-editor/data-editor.service";
 import {Subject} from "rxjs/subject";
 import {AlertComponent} from "./alert/alert.component";
+import {AlertService} from "./alert/alert.service";
 
 //HttpOptions are needed to make sure that all REST API pass basic security as well as browser CORS
 const httpOptions = {
@@ -22,7 +23,7 @@ export class HttpService {
 
   host = "http://localhost:8000/";
 
-  constructor(private httpClient:HttpClient, private alertComponent:AlertComponent) {
+  constructor(private _httpClient:HttpClient, private _alertService:AlertService) {
   }
 
   /**
@@ -33,7 +34,7 @@ export class HttpService {
    * @param dataArray
    */
   load(objectUrl:String, subject:Subject<any>, dataArray:any[]) {
-    this.httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
+    this._httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
       console.log("Received " + data);
 
       //empty the array so the ui does not show old values
@@ -51,7 +52,6 @@ export class HttpService {
       subject.next(dataArray);
     },
     err => {
-      console.log(err);
       this.handleError(err);
     } );
   }
@@ -68,7 +68,7 @@ export class HttpService {
     console.log("adding data: " + object);
     let json = JSON.stringify(object); //convert object to JSON
 
-    this.httpClient.post<Data>(this.host + objectUrl, json, httpOptions).subscribe(data => {
+    this._httpClient.post<Data>(this.host + objectUrl, json, httpOptions).subscribe(data => {
       dataArray.push(data); //Add post server created object to the display array
       subject.next(dataArray); //Emit to the observer the updated list of objects
     });
@@ -83,7 +83,7 @@ export class HttpService {
    * @param dataArray
      */
   update(object:any, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
-    this.httpClient.put(this.host + objectUrl + object.id, httpOptions).subscribe(data=> {
+    this._httpClient.put(this.host + objectUrl + object.id, httpOptions).subscribe(data=> {
 
       //loop to find the item by id
       for (let index = 0; index < dataArray.length; index++) {
@@ -104,7 +104,7 @@ export class HttpService {
    */
   remove(id:string, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
     console.log("deleting data(" + id + ")");
-    this.httpClient.delete(this.host + objectUrl + id, httpOptions).subscribe(data=> {
+    this._httpClient.delete(this.host + objectUrl + id, httpOptions).subscribe(data=> {
 
       //loop to find the item by id
       for (let index = 0; index < dataArray.length; index++) {
@@ -119,7 +119,8 @@ export class HttpService {
   /**
    *
    * @param err*/
-  private handleError(err:any):void {
-    this.alertComponent.showIt = true
+  private handleError(err:any): void {
+    console.log(err.error);
+    this._alertService.push( err.error );
   }
 }

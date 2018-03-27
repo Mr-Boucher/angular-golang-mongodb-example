@@ -10,6 +10,7 @@ import { ConfigurationComponent } from './configuration/configuration.component'
 import { AppRoutingModule } from './app-routing.module';
 import {HttpService} from "./http.service";
 import {AlertComponent} from "./alert/alert.component";
+import {AlertService} from "./alert/alert.service";
 
 
 @NgModule({
@@ -25,7 +26,10 @@ import {AlertComponent} from "./alert/alert.component";
     FormsModule,
     AppRoutingModule
   ],
-  providers: [HttpService, AlertComponent],
+  providers: [
+    HttpService,
+    AlertService,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
