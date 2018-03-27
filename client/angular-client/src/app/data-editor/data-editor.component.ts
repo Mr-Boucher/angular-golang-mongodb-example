@@ -21,7 +21,7 @@ export class DataEditorComponent implements OnInit {
     this._dataEditorService.data.subscribe(
       data => {
         this.data = data;
-        console.log("subscribe result");
+        console.log("DataEditorComponent::result");
       },
       err => {
         this.error = err;

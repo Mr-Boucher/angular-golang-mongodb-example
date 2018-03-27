@@ -120,7 +120,8 @@ export class HttpService {
    *
    * @param err*/
   private handleError(err:any): void {
-    console.log(err.error);
-    this._alertService.push( err.error );
+    var daError = err.error;
+    console.log("HttpService::handleError: " + daError);
+    this._alertService.push( daError );
   }
 }

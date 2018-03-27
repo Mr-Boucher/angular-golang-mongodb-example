@@ -9,7 +9,7 @@ import {Observable} from "rxjs/Observable";
 export class AlertService {
 
   subject:Subject<String> = new Subject();
-  error: String = "";
+  _errors: String = "";
 
   /**
    *
@@ -27,12 +27,22 @@ export class AlertService {
   }
 
   hasErrors(): boolean {
-    return this.error.length > 0;
+    console.log( "AlertService::hasErrors: " + this._errors );
+    return this._errors.length > 0;
   }
 
-  push(error:String): void {
-    this.error = error;
-    this.subject.next( error );
+  clearErrors():void {
+    console.log( "AlertService::clearErrors: " + this._errors );
+    this._errors = "";
+    console.log( "AlertService::clearErrors: " + this._errors );
+    this.subject.next( this._errors );
+  }
+
+  push(daError:string): void {
+    console.log( "AlertService::push: " + this._errors );
+    this._errors = daError;
+    console.log( "AlertService::push: " + this._errors );
+    this.subject.next( this._errors );
   }
 }
 
