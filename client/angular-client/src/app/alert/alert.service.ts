@@ -2,14 +2,20 @@ import {Injectable} from '@angular/core';
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
 
+export class AppError {
+  id:Number;
+  type:String;
+  message:String;
+}
+
 /**
  * Supports the CRUD of data objects
  */
 @Injectable()
 export class AlertService {
 
-  private subject:Subject<String> = new Subject();
-  private _errors: String = "";
+  private subject:Subject<AppError[]> = new Subject();
+  private _errors: AppError[] = [];
 
   /**
    *
@@ -22,11 +28,11 @@ export class AlertService {
    *
    * @returns {Observable<Data[]>}
    */
-  get errorsObserver(): Observable<String>  {
+  get errorsObserver(): Observable<AppError[]>  {
     return this.subject.asObservable();
   }
 
-  get errors(): String  {
+  get errors(): AppError[]  {
     return this._errors;
   }
 
@@ -37,14 +43,14 @@ export class AlertService {
 
   clearErrors():void {
     console.log( "AlertService::clearErrors: " + this._errors );
-    this._errors = "";
+    this._errors = [];
     console.log( "AlertService::clearErrors: " + this._errors );
     this.subject.next( this._errors );
   }
 
-  push(daError:string): void {
+  push(daError:AppError): void {
     console.log( "AlertService::push: " + this._errors );
-    this._errors = daError;
+    this._errors.push( daError );
     console.log( "AlertService::push: " + this._errors );
     this.subject.next( this._errors );
   }

@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output } from '@angular/core';
 import {AlertService} from "./alert.service";
+import {AppError} from "./alert.service";
 
 /**
  *
@@ -12,13 +13,15 @@ import {AlertService} from "./alert.service";
 })
 export class AlertComponent implements OnInit {
 
-  private _errors: String = "Uknonw";
-
   constructor( private _alertService: AlertService ) {
   }
 
-  get errors(): String{
-    return this._errors;
+  get errors(): AppError[]{
+    return this._alertService.errors;
+  }
+
+  hasErrors(): boolean  {
+    return this._alertService.hasErrors();
   }
 
   /**
@@ -26,22 +29,6 @@ export class AlertComponent implements OnInit {
    */
   ngOnInit() {
     console.log("Alert::ngOnInit");
-    this._alertService.errorsObserver.subscribe(
-      errors => {
-        console.log("Alert::Alert errors:" + errors);
-        this._errors = "Balh";
-        console.log("Alert::Alert:" + this._errors);
-      },
-      err => {
-        console.log("Alert::Error:" + err);
-        console.error(err);
-      },
-      () => {
-        console.log("Alert::Alert Done");
-      }
-    );
-
-    this._errors = this._alertService.errors;
   }
 
   close() {

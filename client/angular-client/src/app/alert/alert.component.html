@@ -1,7 +1,16 @@
-<div class="modal">
-  <div>
-    Alert: {{errors}}
+<div *ngIf="hasErrors()">
+  <div class="modal">
+    <div>
+      Alert:
+    </div>
+    <ul>
+      <li *ngFor="let error of errors">
+        <div>
+          ({{error.id}}){{error.type}} = {{error.message}}
+        </div>
+      </li>
+    </ul>
+    <button type="button" (click)="close()">Close</button>
   </div>
-  <button type="button" (click)="close()">Close</button>
-</div >
-<div class="overlay"></div>
+  <div class="overlay"></div>
+</div>

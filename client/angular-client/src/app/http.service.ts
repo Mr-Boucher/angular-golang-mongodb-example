@@ -4,6 +4,7 @@ import {Data} from "./data-editor/data-editor.service";
 import {Subject} from "rxjs/subject";
 import {AlertComponent} from "./alert/alert.component";
 import {AlertService} from "./alert/alert.service";
+import {AppError} from "./alert/alert.service";
 
 //HttpOptions are needed to make sure that all REST API pass basic security as well as browser CORS
 const httpOptions = {
@@ -124,8 +125,11 @@ export class HttpService {
    *
    * @param err*/
   private handleError(_alertService:AlertService, err:any): void {
-    var daError = err.error;
-    console.log("HttpService::handleError: " + daError);
-    _alertService.push( daError );
+    console.log("HttpService::handleError: " + err.error);
+    let error = new AppError();
+    error.id = 1;
+    error.type = "Validation";
+    error.message = err.error;
+    _alertService.push( error );
   }
 }
