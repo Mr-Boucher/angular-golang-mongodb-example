@@ -22,8 +22,12 @@ export class AlertService {
    *
    * @returns {Observable<Data[]>}
    */
-  get errors(): Observable<String>  {
+  get errorsObserver(): Observable<String>  {
     return this.subject.asObservable();
+  }
+
+  get errors(): String  {
+    return this._errors;
   }
 
   hasErrors(): boolean {

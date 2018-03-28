@@ -10,7 +10,7 @@ import {Configuration} from "./configuration.service";
   selector: 'app-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.css'],
-  providers: [ConfigurationService]
+  providers: []
 })
 export class ConfigurationComponent implements OnInit {
 

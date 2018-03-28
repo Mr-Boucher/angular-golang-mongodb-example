@@ -11,6 +11,8 @@ import { AppRoutingModule } from './app-routing.module';
 import {HttpService} from "./http.service";
 import {AlertComponent} from "./alert/alert.component";
 import {AlertService} from "./alert/alert.service";
+import {DataEditorService} from "./data-editor/data-editor.service";
+import {ConfigurationService} from "./configuration/configuration.service";
 
 
 @NgModule({
@@ -29,6 +31,8 @@ import {AlertService} from "./alert/alert.service";
   providers: [
     HttpService,
     AlertService,
+    DataEditorService,
+    ConfigurationService
   ],
   bootstrap: [AppComponent]
 })

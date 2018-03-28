@@ -12,9 +12,13 @@ import {AlertService} from "./alert.service";
 })
 export class AlertComponent implements OnInit {
 
-  errors: String = "";
+  private _errors: String = "Uknonw";
 
   constructor( private _alertService: AlertService ) {
+  }
+
+  get errors(): String{
+    return this._errors;
   }
 
   /**
@@ -22,11 +26,11 @@ export class AlertComponent implements OnInit {
    */
   ngOnInit() {
     console.log("Alert::ngOnInit");
-    this._alertService.errors.subscribe(
+    this._alertService.errorsObserver.subscribe(
       errors => {
         console.log("Alert::Alert errors:" + errors);
-        this.errors = errors;
-        console.log("Alert::Alert:" + this.errors);
+        this._errors = "Balh";
+        console.log("Alert::Alert:" + this._errors);
       },
       err => {
         console.log("Alert::Error:" + err);
@@ -36,6 +40,8 @@ export class AlertComponent implements OnInit {
         console.log("Alert::Alert Done");
       }
     );
+
+    this._errors = this._alertService.errors;
   }
 
   close() {

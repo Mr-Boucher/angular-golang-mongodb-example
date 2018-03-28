@@ -7,7 +7,7 @@ import {AlertService} from "../alert/alert.service";
   selector: 'app-data-editor',
   templateUrl: './data-editor.component.html',
   styleUrls: ['./data-editor.component.css'],
-  providers: [DataEditorService]
+  providers: []
 })
 export class DataEditorComponent implements OnInit {
 
