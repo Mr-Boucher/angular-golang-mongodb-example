@@ -5,6 +5,7 @@ import {Subject} from "rxjs/Subject";
 import {HttpService} from "../http.service";
 import {Observable} from "rxjs/Observable";
 import {catchError} from "rxjs/operators";
+import {AlertService} from "../alert/alert.service";
 
 /**
  * The object the service and component handle
@@ -31,7 +32,7 @@ export class DataEditorService {
    *
    * @param httpService
    */
-  constructor(private httpService:HttpService) {
+  constructor(private httpService:HttpService, private _alertService:AlertService) {
     this.load();
   }
 
@@ -50,7 +51,7 @@ export class DataEditorService {
   search( searchCriteria:string ):void {
     console.log("Search Criteria" + searchCriteria );
     let sc = new Array(searchCriteria);
-    this.httpService.load(this.searchUrl + sc, this.subject, this._data );
+    this.httpService.load(this.searchUrl + sc, this.subject, this._alertService, this._data );
   }
 
   /**
@@ -58,7 +59,7 @@ export class DataEditorService {
    */
   load( ):void {
     console.log("Load" );
-    this.httpService.load(this.objectUrl, this.subject, this._data );
+    this.httpService.load(this.objectUrl, this.subject, this._alertService, this._data );
   }
 
   /**

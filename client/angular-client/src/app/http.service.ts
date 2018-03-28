@@ -23,7 +23,7 @@ export class HttpService {
 
   host = "http://localhost:8000/";
 
-  constructor(private _httpClient:HttpClient, private _alertService:AlertService) {
+  constructor(private _httpClient:HttpClient) {
   }
 
   /**
@@ -33,9 +33,9 @@ export class HttpService {
    * @param subject
    * @param dataArray
    */
-  load(objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+  load(objectUrl:String, subject:Subject<any>, _alertService:AlertService, dataArray:any[]) {
     this._httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
-      console.log("Received " + data);
+      console.log("HttpService::Load Received " + data);
 
       //empty the array so the ui does not show old values
       dataArray.splice(0, dataArray.length);
@@ -52,8 +52,12 @@ export class HttpService {
       subject.next(dataArray);
     },
     err => {
-      this.handleError(err);
-    } );
+      console.log("HttpService::Loading Error");
+      this.handleError(_alertService, err);
+    },
+    () => {
+      console.log("HttpService::Load Done");
+    });
   }
 
   /**
@@ -119,9 +123,9 @@ export class HttpService {
   /**
    *
    * @param err*/
-  private handleError(err:any): void {
+  private handleError(_alertService:AlertService, err:any): void {
     var daError = err.error;
     console.log("HttpService::handleError: " + daError);
-    this._alertService.push( daError );
+    _alertService.push( daError );
   }
 }

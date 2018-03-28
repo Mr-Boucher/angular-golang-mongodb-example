@@ -8,8 +8,8 @@ import {Observable} from "rxjs/Observable";
 @Injectable()
 export class AlertService {
 
-  subject:Subject<String> = new Subject();
-  _errors: String = "";
+  private subject:Subject<String> = new Subject();
+  private _errors: String = "";
 
   /**
    *
@@ -22,7 +22,7 @@ export class AlertService {
    *
    * @returns {Observable<Data[]>}
    */
-  get errors(): Observable {
+  get errors(): Observable<String>  {
     return this.subject.asObservable();
   }
 

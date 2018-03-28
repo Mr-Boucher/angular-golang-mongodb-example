@@ -8,7 +8,7 @@ import {AlertService} from "./alert.service";
   selector: 'app-alert',
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.css'],
-  providers: [AlertService]
+  providers: []
 })
 export class AlertComponent implements OnInit {
 
@@ -24,6 +24,7 @@ export class AlertComponent implements OnInit {
     console.log("Alert::ngOnInit");
     this._alertService.errors.subscribe(
       errors => {
+        console.log("Alert::Alert errors:" + errors);
         this.errors = errors;
         console.log("Alert::Alert:" + this.errors);
       },
@@ -32,7 +33,7 @@ export class AlertComponent implements OnInit {
         console.error(err);
       },
       () => {
-        console.log("done loading");
+        console.log("Alert::Alert Done");
       }
     );
   }

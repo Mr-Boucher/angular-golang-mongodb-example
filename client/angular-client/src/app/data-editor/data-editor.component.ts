@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 
 import {Data, DataEditorService} from "./data-editor.service";
+import {AlertService} from "../alert/alert.service";
 
 @Component({
   selector: 'app-data-editor',

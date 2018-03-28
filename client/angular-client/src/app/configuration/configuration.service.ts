@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpService} from "../http.service";
 import {Subject} from "rxjs/Subject";
+import {AlertService} from "../alert/alert.service";
 
 /**
  * single editable property
@@ -35,7 +36,7 @@ export class ConfigurationService {
    *
    * @param httpService
    */
-  constructor(private httpService:HttpService) {
+  constructor(private httpService:HttpService, private _alertService:AlertService) {
   }
 
   /**
@@ -57,6 +58,6 @@ export class ConfigurationService {
 
   load():void {
     console.log("load data");
-    this.httpService.load(this.objectUrl, this.subject, this._configurations);
+    this.httpService.load(this.objectUrl, this.subject, this._alertService, this._configurations);
   }
 }
