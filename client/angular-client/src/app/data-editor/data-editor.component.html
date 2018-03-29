@@ -10,8 +10,9 @@
       <button class="data_button" (click)="search(search_criteria.value)">Search</button>
       <input #search_criteria id="search_criteria">
     </h2>
+    <pagination-controls (pageChange)="p = $event"></pagination-controls>
     <ul *ngIf="(data) else noData">
-      <li *ngFor="let item of data">
+      <li *ngFor="let item of data | paginate: { itemsPerPage: 10, currentPage: p }">
         <button class="data_button" (click)="remove( item.id )">Delete</button>
         <span class="value">{{item.value}}</span>
       </li>
