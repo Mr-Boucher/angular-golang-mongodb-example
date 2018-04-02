@@ -22,7 +22,6 @@ export class Data {
 export class DataEditorService {
 
   objectUrl = "data";
-  searchUrl = this.objectUrl + "?search=";
   deleteUrl = this.objectUrl + "/";
 
   subject:Subject<Data[]> = new Subject();
@@ -33,7 +32,6 @@ export class DataEditorService {
    * @param httpService
    */
   constructor(private httpService:HttpService, private _alertService:AlertService) {
-    this.load();
   }
 
   /**
@@ -41,17 +39,21 @@ export class DataEditorService {
    *
    * @returns {Observable<Data[]>}
    */
-  get data() {
+  get data():Observable<Data[]> {
     return this.subject.asObservable();
   }
 
   /**
    *
    */
-  search( searchCriteria:string ):void {
-    console.log("Search Criteria" + searchCriteria );
-    let sc = new Array(searchCriteria);
-    this.httpService.load(this.searchUrl + sc, this.subject, this._alertService, this._data );
+  search( searchCriteria:string, pageNumber:number ):Observable<Data[]> {
+    console.log("Search Criteria:" + searchCriteria );
+    console.log("Search pageNumber:" + pageNumber );
+    let url:string = this.objectUrl + "?pageNumber=" + pageNumber + "&search=";
+    if( searchCriteria != null )
+      url += searchCriteria;
+    this.httpService.load( url, this.subject, this._alertService, this._data );
+    return this.subject.asObservable();
   }
 
   /**

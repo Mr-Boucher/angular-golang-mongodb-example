@@ -13,6 +13,7 @@ import (
 	"../httpmanager"
 	"../mongodbmanager"
 	"../utils"
+	"strconv"
 )
 
 const (
@@ -74,7 +75,7 @@ func (d *dataEditorObject) GetHttpRouterHandlers() []httpmanager.HttpRouterHandl
 	//Search
 	dataSearchMethodFunctions := []httpmanager.HttpMethodFunction{}
 	dataSearchMethodFunctions = append(dataSearchMethodFunctions, httpmanager.NewHttpMethodFunction("GET", d.search))
-	dataSearchMethodHandler := httpmanager.NewHttpRouteHandler(d.id, baseUrl + "?search=[a-zA-Z0-9]+}", dataSearchMethodFunctions)
+	dataSearchMethodHandler := httpmanager.NewHttpRouteHandler(d.id, baseUrl + "?pageNumber=[0-9]+&search=[a-zA-Z0-9]+", dataSearchMethodFunctions)
 	routers = append(routers, dataSearchMethodHandler)
 
 	//add the backs method for /Data/id
@@ -111,52 +112,63 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 
 	fmt.Println("DataEditor::Search", arguments)
 	var results []TestData
-	var err error
-
-	context := appcontext.(Context)
-
-	//Get the search criteria
-	searchCriteria := context.GetSliceParameters()["search"]
-	fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
-
-	//Load data
-	collection := context.GetCollection()
-
-	//
+	var err error //default err value of nil
 	var criteria bson.M = bson.M{} //default criteria is to return everything
 
-	//value searchCriteria is the is some
-	if len(searchCriteria) > 0 && len(searchCriteria[0]) > 0 {
-		//validate search criteria does not contain
-		hasInvalidSearchCriteria := d.regex.MatchString(searchCriteria[0])
-		if hasInvalidSearchCriteria {
-			err = utils.NewError(searchCriteria[0] + " contains invalid chars")
+	context := appcontext.(Context)
+	collection := context.GetCollection()
+
+	//Get the search criteria
+	searchCriteria := context.GetSliceParameters()["search"][0]
+	pageNumberStr := context.GetSliceParameters()["pageNumber"]
+	pageSize := 2
+	fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
+	fmt.Println("DataEditor::Search pageNumber", pageNumberStr)
+
+	//Value searchCriteria
+	if len(pageNumberStr) <= 0 {
+		err = utils.NewError("Missing pageNumber")
+	} else {
+		var pageNumber int
+		pageNumber, err = strconv.Atoi(pageNumberStr[0])
+		if pageNumber <= 0 {
+			err = utils.NewError("Invalid pageNumber " + pageNumberStr[0])
 		} else {
-			//do the search
-			fmt.Println("DataEditor::Search searchCriteria", searchCriteria[0])
+			//apply filter criteria if any
+			if len(searchCriteria) > 0 {
+				//validate search criteria does not contain
+				fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
+				hasInvalidSearchCriteria := d.regex.MatchString(searchCriteria)
+				if hasInvalidSearchCriteria {
+					err = utils.NewError(searchCriteria + " contains invalid chars")
+				} else {
+					fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
 
-			regex := bson.RegEx{}
-			searchType := "" //starts with
-			regex.Pattern = searchType + searchCriteria[0] //
-			regex.Options = "i" //make search case-insensitive
-			criteria = bson.M{"value": regex }
+					//Create bson regex expression from the search criteria
+					regex := bson.RegEx{}
+					searchType := "" //starts with
+					regex.Pattern = searchType + searchCriteria //
+					regex.Options = "i" //make search case-insensitive
+					criteria = bson.M{"value": regex }
+				}
+			}
 		}
-	}
 
-	//Do the actual search in MongoDB
-	if err == nil {
-		query := collection.Find(criteria)
-		query = query.Sort("value") //sort the data by its value
+		//Do the actual search in MongoDB if no errors
+		if err == nil {
+			query := collection.Find(criteria) //
+			query = query.Sort("value") //sort the data by its value
+			query = query.Limit(pageSize) //Limit the size after the sort
+			query.All(&results) //execute the query
 
-		query.All(&results) //execute the query
-
-		//Display the data returned for debugging
-		fmt.Println("***********************Start of results***********************")
-		for index, result := range results {
-			fmt.Println(index, "id:", result.Id, "value:", result.Value)
+			//Display the data returned for debugging
+			fmt.Println("***********************Start of results***********************")
+			for index, result := range results {
+				fmt.Println(index, "id:", result.Id, "value:", result.Value)
+			}
+			fmt.Println("***********************End of results***********************")
+			fmt.Println("Finished Search data")
 		}
-		fmt.Println("***********************End of results***********************")
-		fmt.Println("Finished Search data")
 	}
 
 	return results, err
