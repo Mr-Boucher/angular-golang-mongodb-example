@@ -14,53 +14,62 @@ import {DataSet} from "./data-editor.service";
 })
 export class DataEditorComponent implements OnInit {
 
-  @Input('data') data: DataSet;
-  private asyncData: Observable<DataSet>;
+  data:DataSet;
   private error;
-  private page: number = 1;
-  private total: number;
-  private loading: boolean;
+  private page:number = 1;
+  private total:number;
+  private loading:boolean;
 
-  constructor(private _dataEditorService: DataEditorService) {
+  constructor(private _dataEditorService:DataEditorService) {
   }
 
   ngOnInit() {
-    console.log( "ngOnInit" );
-    //this._dataEditorService.data.subscribe(
-    //  data => {
-    //    this.data = data;
-    //    console.log("DataEditorComponent::result");
-    //  },
-    //  err => {
-    //    this.error = err;
-    //    console.error(err);
-    //  },
-    //  () => {
-    //    console.log('done loading');
-    //  }
-    //);
+    console.log("DataEditorComponent::ngOnInit");
+    this._dataEditorService.data.subscribe(
+      data => {
+        this.data = data;
+        console.log("DataEditorComponent::result" + data);
+      },
+      err => {
+        this.error = err;
+        console.error("DataEditorComponent::error " + err);
+      },
+      () => {
+        console.log('DataEditorComponent::done loading');
+      }
+    );
 
     this.getPage(null, 1);
   }
 
-  getObservable() :Observable<DataSet> {
-    return this.asyncData;
+  getObservable():Observable<DataSet> {
+    return this._dataEditorService.data;
   }
 
-  getPage(data, page: number) {
+  getDataList():Data[] {
+    return this.data.data;
+  }
+
+  pageChanged(event):number {
+    console.log('DataEditorComponent::pageChanged to ' + event);
+    this.getPage("", event);
+    return event;
+  }
+
+  getPage(searchCriteria:string, page:number):void {
     this.loading = true;
-    this.asyncData = this._dataEditorService.search( data, page );
+    this._dataEditorService.search(searchCriteria, page);
   }
 
-  search( searchCriteria:string, page:number, $event):Observable<DataSet> {
-    return this._dataEditorService.search( searchCriteria, page );
+  search(searchCriteria:string, page:number, $event):Observable<DataSet> {
+    return this._dataEditorService.search(searchCriteria, page);
   }
 
-  add( data, $event ):void {
-    this._dataEditorService.add( data )
+  add(data, $event):void {
+    this._dataEditorService.add(data)
   }
 
-  remove( id: string, $event ):void {
-    this._dataEditorService.remove( id );
+  remove(id:string, $event):void {
+    this._dataEditorService.remove(id);
   }
 }

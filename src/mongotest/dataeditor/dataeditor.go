@@ -151,12 +151,14 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 		if err == nil {
 			query := collection.Find(criteria) //
 			query = query.Sort("value") //sort the data by its value
+			query = query.Skip(pageSize * (pageNumber-1) ) //todo this is a known performance issue
 			query = query.Limit(pageSize) //Limit the size after the sort
 			query.All(&results.TestData) //execute the query
 
 			//Display the data returned for debugging
 			fmt.Println("***********************Start of results***********************")
-			results.TotalCount = len(results.TestData)
+			results.TotalCount= 11
+			fmt.Println("results.TotalCount", results.TotalCount)
 			for index, result := range results.TestData {
 				fmt.Println(index, "id:", result.Id, "value:", result.Value)
 			}
