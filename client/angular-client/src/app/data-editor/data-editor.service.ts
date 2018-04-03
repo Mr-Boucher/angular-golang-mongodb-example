@@ -15,6 +15,11 @@ export class Data {
   value:String;
 }
 
+export class DataSet {
+  data:Data[] = [];
+  totalCount:number = 0;
+}
+
 /**
  * Supports the CRUD of data objects
  */
@@ -24,14 +29,15 @@ export class DataEditorService {
   objectUrl = "data";
   deleteUrl = this.objectUrl + "/";
 
-  subject:Subject<Data[]> = new Subject();
-  _data:Data[] = []; //Make sure it is defaulted to an empty array else it will be undefined causing errors
+  subject:Subject<DataSet> = new Subject();
+  _data:DataSet = new DataSet(); //Make sure it is defaulted to an empty array else it will be undefined causing errors
 
   /**
    *
    * @param httpService
    */
   constructor(private httpService:HttpService, private _alertService:AlertService) {
+    console.log("DataEditorService Constructor:" );
   }
 
   /**
@@ -39,29 +45,42 @@ export class DataEditorService {
    *
    * @returns {Observable<Data[]>}
    */
-  get data():Observable<Data[]> {
+  get data():Observable<DataSet> {
     return this.subject.asObservable();
   }
 
   /**
    *
    */
-  search( searchCriteria:string, pageNumber:number ):Observable<Data[]> {
+  search( searchCriteria:string, pageNumber:number ):Observable<DataSet> {
     console.log("Search Criteria:" + searchCriteria );
     console.log("Search pageNumber:" + pageNumber );
     let url:string = this.objectUrl + "?pageNumber=" + pageNumber + "&search=";
     if( searchCriteria != null )
       url += searchCriteria;
-    this.httpService.load( url, this.subject, this._alertService, this._data );
+    this.httpService.load( url, this.handleResult.bind( this ) );
     return this.subject.asObservable();
   }
 
   /**
    *
+   * @param data
    */
-  load( ):void {
-    console.log("Load" );
-    this.httpService.load(this.objectUrl, this.subject, this._alertService, this._data );
+  handleResult( data:any ):void {
+    console.log("DataEditorService handleResult:" + data['total_count'] );
+    this._data.totalCount = data['total_count'];
+    this._data.data = [];
+    for( let obj of data['data_set'] )
+    {
+      let newObj:Data = new Data();
+      newObj.id = data['id'];
+      newObj.value = data['value'];
+      this._data.data.push( newObj );
+    }
+    this._data.data = data['data_set'];
+
+    //Emit the data to the subject so the data will refresh with the new value set
+    this.subject.next(this._data);
   }
 
   /**
@@ -73,7 +92,7 @@ export class DataEditorService {
     //create the data object
     let newData = new Data();
     newData.value = value; //only set the value because the Id is created on the server
-    this.httpService.add(newData, this.objectUrl, this.subject, this._data);
+    this.httpService.add(newData, this.objectUrl, this.subject, this._data.data);
   }
 
   /**
@@ -81,7 +100,7 @@ export class DataEditorService {
    * @param id
    */
   remove(id:string):void {
-    this.httpService.remove(id, this.deleteUrl, this.subject, this._data);
+    this.httpService.remove(id, this.deleteUrl, this.subject, this._data.data);
   }
 }
 

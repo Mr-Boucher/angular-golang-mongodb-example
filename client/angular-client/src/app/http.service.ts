@@ -5,6 +5,7 @@ import {Subject} from "rxjs/subject";
 import {AlertComponent} from "./alert/alert.component";
 import {AlertService} from "./alert/alert.service";
 import {AppError} from "./alert/alert.service";
+import {DataSet} from "./data-editor/data-editor.service";
 
 //HttpOptions are needed to make sure that all REST API pass basic security as well as browser CORS
 const httpOptions = {
@@ -24,41 +25,31 @@ export class HttpService {
 
   host = "http://localhost:8000/";
 
-  constructor(private _httpClient:HttpClient) {
+  constructor(private _httpClient:HttpClient, private _alertService:AlertService) {
   }
 
   /**
    * Call the REST API, add the data to the array and update the subject
    *
    * @param objectUrl
-   * @param subject
-   * @param dataArray
+   * @param unmarshal
    */
-  load(objectUrl:String, subject:Subject<any>, _alertService:AlertService, dataArray:any[]) {
-    this._httpClient.get<Data[]>(this.host + objectUrl, httpOptions).subscribe(data => {
-      console.log("HttpService::Load Received " + data);
+  load(objectUrl:String, handleResult:Function) {
+    this._httpClient.get<DataSet>(this.host + objectUrl, httpOptions)
+      .subscribe(result =>
+      {
+        console.log("HttpService::Load Received " + result);
 
-      //empty the array so the ui does not show old values
-      dataArray.splice(0, dataArray.length);
-
-      //add the data[] elements to the dataArray
-      if (data != null) {
-        (<any[]>data).forEach(function (value) {
-          console.log(value);
-          dataArray.push(value);
-        });
-      }
-
-      //Emit the data to the subject so the data will refresh with the new value set
-      subject.next(dataArray);
-    },
-    err => {
-      console.log("HttpService::Loading Error");
-      this.handleError(_alertService, err);
-    },
-    () => {
-      console.log("HttpService::Load Done");
-    });
+        //invoke the call back/unmarshal method of the specialized service
+        handleResult( result)
+      },
+      err => {
+        console.log("HttpService::Loading Error");
+        this.handleError(err);
+      },
+      () => {
+        console.log("HttpService::Load Done");
+      });
   }
 
   /**
@@ -122,14 +113,16 @@ export class HttpService {
   }
 
   /**
+   * Post the error to the alertService to display it over the current component
    *
-   * @param err*/
-  private handleError(_alertService:AlertService, err:any): void {
+   * @param err
+   */
+  private handleError( err:any): void {
     console.log("HttpService::handleError: " + err.error);
     let error = new AppError();
     error.id = 1;
     error.type = "Validation";
     error.message = err.error;
-    _alertService.push( error );
+    this._alertService.push( error );
   }
 }

@@ -3,6 +3,7 @@ import {Component, OnInit, Input, ChangeDetectionStrategy} from '@angular/core';
 import {Data, DataEditorService} from "./data-editor.service";
 import {AlertService} from "../alert/alert.service";
 import {Observable} from "rxjs/Observable";
+import {DataSet} from "./data-editor.service";
 
 @Component({
   selector: 'app-data-editor',
@@ -13,8 +14,8 @@ import {Observable} from "rxjs/Observable";
 })
 export class DataEditorComponent implements OnInit {
 
-  @Input('data') data: Data[] = [];
-  private asyncData: Observable<Data[]>;
+  @Input('data') data: DataSet;
+  private asyncData: Observable<DataSet>;
   private error;
   private page: number = 1;
   private total: number;
@@ -42,7 +43,7 @@ export class DataEditorComponent implements OnInit {
     this.getPage(null, 1);
   }
 
-  getObservable() :Observable<Data[]> {
+  getObservable() :Observable<DataSet> {
     return this.asyncData;
   }
 
@@ -51,11 +52,7 @@ export class DataEditorComponent implements OnInit {
     this.asyncData = this._dataEditorService.search( data, page );
   }
 
-  load( ): void {
-    this._dataEditorService.load();
-  }
-
-  search( searchCriteria:string, page:number, $event):Observable<Data[]> {
+  search( searchCriteria:string, page:number, $event):Observable<DataSet> {
     return this._dataEditorService.search( searchCriteria, page );
   }
 

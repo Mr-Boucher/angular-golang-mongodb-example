@@ -42,13 +42,6 @@ type dataEditorObject struct {
 	regex *regexp.Regexp
 }
 
-//Test data format
-type TestData struct {
-	ObjectId bson.ObjectId `bson:"_id,omitempty" json:"-"` //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response) note the "-" it means that json does not have this
-	Value    string        `bson:"value" json:"value"`     //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
-	Id       string        `bson:"id" json:"id"`           //Setup mapping for data from bson(used for Mongo) and json(Used by REST API response)
-}
-
 //
 func NewEditor() DataEditor {
 	regex, err := regexp.Compile("[^a-zA-Z\\d\\s]")
@@ -111,7 +104,7 @@ func (d *dataEditorObject) SetId(id int) {
 func (d *dataEditorObject) search(appcontext interface{}, arguments interface{}) (interface{}, error) {
 
 	fmt.Println("DataEditor::Search", arguments)
-	var results []TestData
+	var results TestDataContainer
 	var err error //default err value of nil
 	var criteria bson.M = bson.M{} //default criteria is to return everything
 
@@ -159,11 +152,12 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 			query := collection.Find(criteria) //
 			query = query.Sort("value") //sort the data by its value
 			query = query.Limit(pageSize) //Limit the size after the sort
-			query.All(&results) //execute the query
+			query.All(&results.TestData) //execute the query
 
 			//Display the data returned for debugging
 			fmt.Println("***********************Start of results***********************")
-			for index, result := range results {
+			results.TotalCount = len(results.TestData)
+			for index, result := range results.TestData {
 				fmt.Println(index, "id:", result.Id, "value:", result.Value)
 			}
 			fmt.Println("***********************End of results***********************")

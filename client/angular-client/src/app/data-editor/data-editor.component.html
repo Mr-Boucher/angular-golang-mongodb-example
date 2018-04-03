@@ -12,7 +12,7 @@
     </h2>
     <pagination-controls (pageChange)="p = $event"></pagination-controls>
     <ul *ngIf="(data) else noData">
-      <li *ngFor="let item of getObservable() | async | paginate: { itemsPerPage: 10, currentPage: p }">
+      <li *ngFor="let item of getObservable().valueOf().data | async | paginate: { itemsPerPage: 10, currentPage: p, maxSize: item.total_count }">
       <!--<li *ngFor="let item of data">-->
         <button class="data_button" (click)="remove( item.id )">Delete</button>
         <span class="value">{{item.value}}</span>

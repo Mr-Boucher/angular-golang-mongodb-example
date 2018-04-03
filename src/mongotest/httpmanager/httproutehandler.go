@@ -60,8 +60,8 @@ func (handler *httpRouterHandlerObject) ServeHTTP(writer http.ResponseWriter, re
 	//Call the action function requests
 	if context.Request.Method != "OPTIONS" {
 		err = handler.processor.Execute(context)
-		fmt.Println("HttpRouterHandler::The Error:", err)
 		if err != nil {
+			fmt.Println("HttpRouterHandler::The Error:", err)
 			http.Error(writer, err.Error(), 500)
 		}
 	}

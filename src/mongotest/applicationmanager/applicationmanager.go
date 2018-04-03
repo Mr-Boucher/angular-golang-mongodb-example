@@ -112,6 +112,7 @@ func (m *applicationManagerObject) Execute( httpcontext httpmanager.HttpContext 
 				err = errX
 				fmt.Println("ApplicationManager::Execute MongoContext:", context.GetMongoDBContext())
 				fmt.Println("ApplicationManager::Execute The Error:", err)
+				fmt.Println("ApplicationManager::Execute The Result:", result)
 
 				var byteData []byte
 				if result != nil && err == nil {

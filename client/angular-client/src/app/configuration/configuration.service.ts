@@ -58,6 +58,6 @@ export class ConfigurationService {
 
   load():void {
     console.log("load data");
-    this.httpService.load(this.objectUrl, this.subject, this._alertService, this._configurations);
+    //this.httpService.load(this.objectUrl, this.subject, this._alertService, this._configurations);
   }
 }
