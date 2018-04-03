@@ -10,7 +10,7 @@ import {DataSet} from "./data-editor.service";
   templateUrl: './data-editor.component.html',
   styleUrls: ['./data-editor.component.css'],
   providers: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class DataEditorComponent implements OnInit {
 
@@ -28,7 +28,7 @@ export class DataEditorComponent implements OnInit {
     this._dataEditorService.data.subscribe(
       data => {
         this.data = data;
-        console.log("DataEditorComponent::result" + data);
+        console.log("DataEditorComponent::result" + data.data);
       },
       err => {
         this.error = err;
@@ -42,16 +42,13 @@ export class DataEditorComponent implements OnInit {
     this.getPage(null, 1);
   }
 
-  getObservable():Observable<DataSet> {
-    return this._dataEditorService.data;
-  }
-
   getDataList():Data[] {
     return this.data.data;
   }
 
   pageChanged(event):number {
     console.log('DataEditorComponent::pageChanged to ' + event);
+    this.data.data = [];
     this.getPage("", event);
     return event;
   }
@@ -61,7 +58,7 @@ export class DataEditorComponent implements OnInit {
     this._dataEditorService.search(searchCriteria, page);
   }
 
-  search(searchCriteria:string, page:number, $event):Observable<DataSet> {
+  search(searchCriteria:string, page:number, event):Observable<DataSet> {
     return this._dataEditorService.search(searchCriteria, page);
   }
 
