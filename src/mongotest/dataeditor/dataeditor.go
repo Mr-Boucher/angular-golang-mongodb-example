@@ -106,68 +106,114 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 	fmt.Println("DataEditor::Search", arguments)
 	var results TestDataContainer
 	var err error //default err value of nil
-	var criteria bson.M = bson.M{} //default criteria is to return everything
+	var queryStr bson.M = bson.M{} //default criteria is to return everything
+	var criteria searchCriteria
 
 	context := appcontext.(Context)
 	collection := context.GetCollection()
 
 	//Get the search criteria
-	searchCriteria := context.GetSliceParameters()["search"][0]
-	pageNumberStr := context.GetSliceParameters()["pageNumber"]
-	pageSize := 2
-	fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
-	fmt.Println("DataEditor::Search pageNumber", pageNumberStr)
+	criteria, err = d.parseCriteria( context )
 
-	//Value searchCriteria
-	if len(pageNumberStr) <= 0 {
-		err = utils.NewError("Missing pageNumber")
-	} else {
-		var pageNumber int
-		pageNumber, err = strconv.Atoi(pageNumberStr[0])
-		if pageNumber <= 0 {
-			err = utils.NewError("Invalid pageNumber " + pageNumberStr[0])
+	//
+	if err == nil && len(criteria.filter) > 0 {
+		//validate search criteria does not contain
+		fmt.Println("DataEditor::Search searchCriteria", criteria.filter)
+		hasInvalidSearchCriteria := d.regex.MatchString(criteria.filter)
+		if hasInvalidSearchCriteria {
+			err = utils.NewError(criteria.filter + " contains invalid chars")
 		} else {
-			//apply filter criteria if any
-			if len(searchCriteria) > 0 {
-				//validate search criteria does not contain
-				fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
-				hasInvalidSearchCriteria := d.regex.MatchString(searchCriteria)
-				if hasInvalidSearchCriteria {
-					err = utils.NewError(searchCriteria + " contains invalid chars")
-				} else {
-					fmt.Println("DataEditor::Search searchCriteria", searchCriteria)
+			fmt.Println("DataEditor::Search searchCriteria", criteria.filter)
 
-					//Create bson regex expression from the search criteria
-					regex := bson.RegEx{}
-					searchType := "" //starts with
-					regex.Pattern = searchType + searchCriteria //
-					regex.Options = "i" //make search case-insensitive
-					criteria = bson.M{"value": regex }
-				}
-			}
-		}
-
-		//Do the actual search in MongoDB if no errors
-		if err == nil {
-			query := collection.Find(criteria) //
-			query = query.Sort("value") //sort the data by its value
-			query = query.Skip(pageSize * (pageNumber-1) ) //todo this is a known performance issue
-			query = query.Limit(pageSize) //Limit the size after the sort
-			query.All(&results.TestData) //execute the query
-
-			//Display the data returned for debugging
-			fmt.Println("***********************Start of results***********************")
-			results.TotalCount= 11
-			fmt.Println("results.TotalCount", results.TotalCount)
-			for index, result := range results.TestData {
-				fmt.Println(index, "id:", result.Id, "value:", result.Value)
-			}
-			fmt.Println("***********************End of results***********************")
-			fmt.Println("Finished Search data")
+			//Create bson regex expression from the search criteria
+			regex := bson.RegEx{}
+			searchType := "" //starts with
+			regex.Pattern = searchType + criteria.filter //
+			regex.Options = "i" //make search case-insensitive
+			queryStr = bson.M{"value": regex }
 		}
 	}
 
+	//Do the actual search in MongoDB if no errors
+	if err == nil {
+		query := collection.Find(queryStr) //
+		query = query.Sort("value") //sort the data by its value
+		query = query.Skip(criteria.pageSize * (criteria.pageNumber-1) ) //todo this is a known performance issue
+		query = query.Limit(criteria.pageSize) //Limit the size after the sort
+		query.All(&results.TestData) //execute the query
+
+		//
+		results.TotalCount,err = collection.Find(queryStr).Count()
+		fmt.Println("results.TotalCount", results.TotalCount)
+
+		//Display the data returned for debugging
+		fmt.Println("***********************Start of results***********************")
+		for index, result := range results.TestData {
+			fmt.Println(index, "id:", result.Id, "value:", result.Value)
+		}
+		fmt.Println("***********************End of results***********************")
+		fmt.Println("Finished Search data")
+	}
+
 	return results, err
+}
+
+type searchCriteria struct {
+	filter string
+	pageNumber int
+	pageSize int
+}
+
+//Parse the criteria
+func (d *dataEditorObject) parseCriteria(context Context) (searchCriteria, error) {
+	var err error
+
+	//parse and validate search criteria
+	filter := context.GetSliceParameters()["search"][0]
+	fmt.Println("DataEditor::Search searchCriteria", filter)
+
+	//Empty value is fine, if not empty then validate
+	if err == nil && len(filter) > 0 {
+		//validate search criteria does not contain
+		fmt.Println("DataEditor::Search searchCriteria", filter)
+		hasInvalidSearchCriteria := d.regex.MatchString(filter)
+		if hasInvalidSearchCriteria {
+			err = utils.NewError(filter + " contains invalid chars")
+		}
+	}
+
+	//parse and validate pageNumber
+	var pageNumber int
+	pageNumberStr := context.GetSliceParameters()["pageNumber"]
+	fmt.Println("DataEditor::Search pageNumber", pageNumberStr)
+	if err == nil && len(pageNumberStr) <= 0 {
+		err = utils.NewError("Missing pageNumber")
+	} else {
+		pageNumber, err = strconv.Atoi(pageNumberStr[0])
+		if pageNumber <= 0 {
+			err = utils.NewError("Invalid pageNumber " + pageNumberStr[0])
+		}
+	}
+
+	//parse and validate pageSize
+	var pageSize int
+	pageSizeStr := context.GetSliceParameters()["pageSize"]
+	fmt.Println("DataEditor::Search pageSize", pageSizeStr, len(pageSizeStr))
+	if err == nil && len(pageSizeStr) <= 0 {
+		err = utils.NewError("Missing pageSize")
+	} else {
+		pageSize, err = strconv.Atoi(pageSizeStr[0])
+		if pageSize <= 0 {
+			err = utils.NewError("Invalid pageSize " + pageSizeStr[0])
+		}
+	}
+
+	//
+	if err != nil {
+		fmt.Println("DataEditor::Search pageSize", err)
+	}
+
+	return searchCriteria{filter, pageNumber, pageSize}, err
 }
 
 ////remove data from db base

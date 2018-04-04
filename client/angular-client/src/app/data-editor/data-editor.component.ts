@@ -15,9 +15,8 @@ import {DataSet} from "./data-editor.service";
 export class DataEditorComponent implements OnInit {
 
   data:DataSet;
+  pageSize:number = 10;
   private error;
-  private page:number = 1;
-  private total:number;
   private loading:boolean;
 
   constructor(private _dataEditorService:DataEditorService) {
@@ -55,11 +54,11 @@ export class DataEditorComponent implements OnInit {
 
   getPage(searchCriteria:string, page:number):void {
     this.loading = true;
-    this._dataEditorService.search(searchCriteria, page);
+    this._dataEditorService.search(searchCriteria, page, this.pageSize);
   }
 
   search(searchCriteria:string, page:number, event):Observable<DataSet> {
-    return this._dataEditorService.search(searchCriteria, page);
+    return this._dataEditorService.search(searchCriteria, page, this.pageSize);
   }
 
   add(data, $event):void {

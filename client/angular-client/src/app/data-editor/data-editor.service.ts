@@ -54,10 +54,11 @@ export class DataEditorService {
   /**
    *
    */
-  search( searchCriteria:string, pageNumber:number ):Observable<DataSet> {
+  search( searchCriteria:string, pageNumber:number, pageSize:number ):Observable<DataSet> {
     console.log("Search Criteria:" + searchCriteria );
     console.log("Search pageNumber:" + pageNumber );
-    let url:string = this.objectUrl + "?pageNumber=" + pageNumber + "&search=";
+    console.log("Search pageSize:" + pageSize );
+    let url:string = this.objectUrl + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize + "&search=";
     if( searchCriteria != null )
       url += searchCriteria;
     this._httpService.load( url, this.handleResult.bind( this ) );
