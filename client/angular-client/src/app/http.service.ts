@@ -5,7 +5,6 @@ import {Subject} from "rxjs/subject";
 import {AlertComponent} from "./alert/alert.component";
 import {AlertService} from "./alert/alert.service";
 import {AppError} from "./alert/alert.service";
-import {DataSet} from "./data-editor/data-editor.service";
 
 //HttpOptions are needed to make sure that all REST API pass basic security as well as browser CORS
 const httpOptions = {
@@ -35,7 +34,7 @@ export class HttpService {
    * @param unmarshal
    */
   load(objectUrl:String, handleResult:Function) {
-    this._httpClient.get<DataSet>(this.host + objectUrl, httpOptions)
+    this._httpClient.get<any>(this.host + objectUrl, httpOptions)
       .subscribe(result =>
       {
         console.log("HttpService::Load Received " + result);

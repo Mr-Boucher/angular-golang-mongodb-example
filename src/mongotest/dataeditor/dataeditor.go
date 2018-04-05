@@ -143,6 +143,9 @@ func (d *dataEditorObject) search(appcontext interface{}, arguments interface{})
 		query.All(&results.TestData) //execute the query
 
 		//
+		results.PageSize = criteria.pageSize;
+
+		//
 		results.TotalCount,err = collection.Find(queryStr).Count()
 		fmt.Println("results.TotalCount", results.TotalCount)
 

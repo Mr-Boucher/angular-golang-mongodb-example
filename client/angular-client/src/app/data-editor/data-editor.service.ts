@@ -18,7 +18,7 @@ export class Data {
 export class DataSet {
   data:Data[] = [];
   totalCount:number = 0;
-  itemsPerPage:number = 2;
+  pageSize:number = 10;
 }
 
 /**
@@ -70,8 +70,9 @@ export class DataEditorService {
    * @param data
    */
   handleResult( data:any ):void {
-    console.log("DataEditorService handleResult total_count:" + data['total_count'] );
+    console.log("DataEditorService handleResult total_count:" + data['total_count'] + data['page_size'] );
     this._data.totalCount = data['total_count'];
+    this._data.pageSize = data['page_size'];
     this._data.data = [];
     for( let obj of data['data_set'] )
     {

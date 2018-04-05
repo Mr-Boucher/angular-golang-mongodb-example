@@ -13,7 +13,7 @@
     <ul *ngIf="(data) else noData">
       {{data.totalCount}}
       <pagination-controls (pageChange)="p = pageChanged($event)"></pagination-controls>
-      <li *ngFor="let item of getDataList() | paginate:{ itemsPerPage: data.itemsPerPage, currentPage: p, totalItems: data.totalCount }">
+      <li *ngFor="let item of getDataList() | paginate:{ itemsPerPage: data.pageSize, currentPage: p, totalItems: data.totalCount }">
       <!--<li *ngFor="let item of data">-->
         <button class="data_button" (click)="remove( item.id )">Delete</button>
         <span class="value">{{item.value}}</span>

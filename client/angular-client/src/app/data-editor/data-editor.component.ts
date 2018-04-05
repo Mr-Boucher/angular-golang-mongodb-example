@@ -14,8 +14,7 @@ import {DataSet} from "./data-editor.service";
 })
 export class DataEditorComponent implements OnInit {
 
-  data:DataSet;
-  pageSize:number = 10;
+  data:DataSet = new DataSet();
   private error;
   private loading:boolean;
 
@@ -48,17 +47,17 @@ export class DataEditorComponent implements OnInit {
   pageChanged(event):number {
     console.log('DataEditorComponent::pageChanged to ' + event);
     this.data.data = [];
-    this.getPage("", event);
+    this.getPage(null, event);
     return event;
   }
 
   getPage(searchCriteria:string, page:number):void {
     this.loading = true;
-    this._dataEditorService.search(searchCriteria, page, this.pageSize);
+    this._dataEditorService.search(searchCriteria, page, this.data.pageSize);
   }
 
   search(searchCriteria:string, page:number, event):Observable<DataSet> {
-    return this._dataEditorService.search(searchCriteria, page, this.pageSize);
+    return this._dataEditorService.search(searchCriteria, page, this.data.pageSize);
   }
 
   add(data, $event):void {

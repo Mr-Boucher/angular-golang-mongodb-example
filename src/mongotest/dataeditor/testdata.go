@@ -14,4 +14,5 @@ type TestData struct {
 type TestDataContainer struct {
 	TestData []TestData `json:"data_set"`
 	TotalCount int `json:"total_count"`
+	PageSize int `json:"page_size"`
 }
