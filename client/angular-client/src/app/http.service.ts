@@ -56,16 +56,15 @@ export class HttpService {
    *
    * @param object
    * @param objectUrl
-   * @param subject
+   * @param handleResult
    * @param dataArray
    */
-  add(object:any, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+  add(object:any, objectUrl:String, handleResult:Function, dataArray:any[]) {
     console.log("adding data: " + object);
     let json = JSON.stringify(object); //convert object to JSON
 
-    this._httpClient.post<Data>(this.host + objectUrl, json, httpOptions).subscribe(data => {
-      dataArray.push(data); //Add post server created object to the display array
-      subject.next(dataArray); //Emit to the observer the updated list of objects
+    this._httpClient.post<Data>(this.host + objectUrl, json, httpOptions).subscribe(result => {
+      handleResult( result );
     });
   }
 
@@ -77,16 +76,9 @@ export class HttpService {
    * @param subject
    * @param dataArray
      */
-  update(object:any, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+  update(object:any, objectUrl:String, handleResult:Function, result:any) {
     this._httpClient.put(this.host + objectUrl + object.id, httpOptions).subscribe(data=> {
-
-      //loop to find the item by id
-      for (let index = 0; index < dataArray.length; index++) {
-        if (dataArray[index].id == object.id) {
-          dataArray[index].update( data );
-          subject.next(dataArray); //Emit to the observer the updated list of objects
-        }
-      }
+      handleResult( result );
     });
   }
 
@@ -97,17 +89,10 @@ export class HttpService {
    * @param subject
    * @param dataArray
    */
-  remove(id:string, objectUrl:String, subject:Subject<any>, dataArray:any[]) {
+  remove(id:string, objectUrl:String,handleResult:Function, result:any) {
     console.log("deleting data(" + id + ")");
     this._httpClient.delete(this.host + objectUrl + id, httpOptions).subscribe(data=> {
-
-      //loop to find the item by id
-      for (let index = 0; index < dataArray.length; index++) {
-        if (dataArray[index].id == id) {
-          dataArray.splice(index, 1); //remove 1 item the item for the list
-          subject.next(dataArray); //Emit to the observer the updated list of objects
-        }
-      }
+      handleResult( result );
     });
   }
 

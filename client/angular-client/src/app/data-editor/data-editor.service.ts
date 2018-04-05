@@ -15,10 +15,13 @@ export class Data {
   value:String;
 }
 
-export class DataSet {
+export class Page {
   data:Data[] = [];
+  state:String = "initial";
   totalCount:number = 0;
+  pageNumber:number = 1;
   pageSize:number = 10;
+  filter:string = null;
 }
 
 /**
@@ -30,8 +33,8 @@ export class DataEditorService {
   objectUrl = "data";
   deleteUrl = this.objectUrl + "/";
 
-  subject:Subject<DataSet> = new Subject();
-  _data:DataSet = new DataSet(); //Make sure it is defaulted to an empty array else it will be undefined causing errors
+  subject:Subject<Page> = new Subject();
+  _data:Page = new Page(); //Make sure it is defaulted to an empty array else it will be undefined causing errors
 
   /**
    *
@@ -47,34 +50,42 @@ export class DataEditorService {
    *
    * @returns {Observable<Data[]>}
    */
-  get data():Observable<DataSet> {
+  get data():Observable<Page> {
     return this.subject.asObservable();
   }
 
   /**
    *
    */
-  search( searchCriteria:string, pageNumber:number, pageSize:number ):Observable<DataSet> {
-    console.log("Search Criteria:" + searchCriteria );
-    console.log("Search pageNumber:" + pageNumber );
-    console.log("Search pageSize:" + pageSize );
-    let url:string = this.objectUrl + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize + "&search=";
-    if( searchCriteria != null )
-      url += searchCriteria;
-    this._httpService.load( url, this.handleResult.bind( this ) );
+  search( searchCriteria:Page ):Observable<Page> {
+    console.log("Search filter:" + searchCriteria.filter );
+    console.log("Search pageNumber:" + searchCriteria.pageNumber );
+    console.log("Search pageSize:" + searchCriteria.pageSize );
+    console.log("Search state:" + searchCriteria.state );
+    let url:string = this.objectUrl + "?pageNumber=" + searchCriteria.pageNumber + "&pageSize=" + searchCriteria.pageSize + "&search=";
+
+    //empty search filter is valid so make sure that it does not end up with null as the filter
+    if( searchCriteria.filter != null )
+      url += searchCriteria.filter;
+    this._httpService.load( url, this.searchResult.bind( this ) );
+
+    //
+    searchCriteria.state = "Loading";
+
+    //
     return this.subject.asObservable();
   }
 
   /**
    *
-   * @param data
+   * @param result
    */
-  handleResult( data:any ):void {
-    console.log("DataEditorService handleResult total_count:" + data['total_count'] + data['page_size'] );
-    this._data.totalCount = data['total_count'];
-    this._data.pageSize = data['page_size'];
+  searchResult( result:any ):void {
+    console.log("DataEditorService handleResult total_count:" + result['total_count'] + result['page_size'] );
+    this._data.totalCount = result['total_count'];
+    this._data.pageSize = result['page_size'];
     this._data.data = [];
-    for( let obj of data['data_set'] )
+    for( let obj of result['data_set'] )
     {
       console.log("DataEditorService handleResult data:" + obj['id'] + "," + obj['value'] + "" );
       let newObj:Data = new Data();
@@ -85,6 +96,9 @@ export class DataEditorService {
 
     //Emit the data to the subject so the data will refresh with the new value set
     this.subject.next(this._data);
+
+    //
+    this._data.state = "Loaded";
   }
 
   /**
@@ -96,7 +110,7 @@ export class DataEditorService {
     //create the data object
     let newData = new Data();
     newData.value = value; //only set the value because the Id is created on the server
-    this._httpService.add(newData, this.objectUrl, this.subject, this._data.data);
+    this._httpService.add(newData, this.objectUrl, this.refreshSearch.bind( this ), this._data.data);
   }
 
   /**
@@ -104,7 +118,15 @@ export class DataEditorService {
    * @param id
    */
   remove(id:string):void {
-    this._httpService.remove(id, this.deleteUrl, this.subject, this._data.data);
+    this._httpService.remove(id, this.deleteUrl, this.refreshSearch.bind( this ), this._data.data);
+  }
+
+  /**
+   *
+   * @param data
+   */
+  refreshSearch( result:any ): void {
+    this.search( this._data );
   }
 }
 

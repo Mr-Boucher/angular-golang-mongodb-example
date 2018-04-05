@@ -3,7 +3,7 @@ import {Component, OnInit, Input, ChangeDetectionStrategy} from '@angular/core';
 import {Data, DataEditorService} from "./data-editor.service";
 import {AlertService} from "../alert/alert.service";
 import {Observable} from "rxjs/Observable";
-import {DataSet} from "./data-editor.service";
+import {Page} from "./data-editor.service";
 
 @Component({
   selector: 'app-data-editor',
@@ -14,7 +14,7 @@ import {DataSet} from "./data-editor.service";
 })
 export class DataEditorComponent implements OnInit {
 
-  data:DataSet = new DataSet();
+  data:Page = new Page();
   private error;
   private loading:boolean;
 
@@ -37,7 +37,7 @@ export class DataEditorComponent implements OnInit {
       }
     );
 
-    this.getPage(null, 1);
+    this.getPage(this.data);
   }
 
   getDataList():Data[] {
@@ -47,17 +47,20 @@ export class DataEditorComponent implements OnInit {
   pageChanged(event):number {
     console.log('DataEditorComponent::pageChanged to ' + event);
     this.data.data = [];
-    this.getPage(null, event);
+    this.data.pageNumber = event;
+    this.getPage(this.data);
     return event;
   }
 
-  getPage(searchCriteria:string, page:number):void {
+  getPage(page:Page):void {
     this.loading = true;
-    this._dataEditorService.search(searchCriteria, page, this.data.pageSize);
+    this._dataEditorService.search(this.data);
   }
 
-  search(searchCriteria:string, page:number, event):Observable<DataSet> {
-    return this._dataEditorService.search(searchCriteria, page, this.data.pageSize);
+  search(searchCriteria:string, page:number, event):Observable<Page> {
+    this.data.filter = searchCriteria;
+    this.data.pageNumber = page;
+    return this._dataEditorService.search(this.data);
   }
 
   add(data, $event):void {
