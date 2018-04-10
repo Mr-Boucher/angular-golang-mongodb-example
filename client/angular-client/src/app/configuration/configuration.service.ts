@@ -53,7 +53,7 @@ export class ConfigurationService {
    * @param configuration
    */
   update(configuration:Configuration):void {
-    this.httpService.update(configuration, this.objectUrl, this.subject, this._configurations);
+    // this.httpService.update(configuration, this.objectUrl, this.subject, this._configurations);
   }
 
   load():void {
