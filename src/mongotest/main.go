@@ -13,7 +13,14 @@ import (
 )
 
 //Should be a constant but can't because of language restriction that const can't have arrays
-var mongoDBDefault = mongodbmanager.MongoDBConfiguration{"dev", "test", []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"}, "admin", "dev", "dev"}
+var mongoDBDefault = mongodbmanager.MongoDBConfiguration{"dev",
+														 "test",
+														 []string{"cluster0-shard-00-00-iaz9w.mongodb.net:27017"},
+														 "admin",
+														 "dev",
+														 "dev",
+														 20,
+}
 var httpConnectionDefault = httpmanager.HttpConnection{8000}
 
 //Kick it all off

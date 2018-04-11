@@ -8,4 +8,5 @@ type MongoDBConfiguration struct {
 	UserDatabase   string
 	Username       string
 	Password       string
+	ConnectionTimeOut int
 }

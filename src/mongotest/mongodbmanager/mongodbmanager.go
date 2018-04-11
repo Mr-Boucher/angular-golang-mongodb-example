@@ -42,6 +42,7 @@ func (db *MongoDBManager) InitContext(contextHolder ContextHolder) {
 		Database: databaseConnectionInfo.UserDatabase,
 		Username: databaseConnectionInfo.Username,
 		Password: databaseConnectionInfo.Password,
+		Timeout:  time.Second * time.Duration( databaseConnectionInfo.ConnectionTimeOut ),
 	}
 
 	fmt.Println("Opening connection to", dialInfo.Addrs, "as", dialInfo.Username, "from the", dialInfo.Database, "DB.")
