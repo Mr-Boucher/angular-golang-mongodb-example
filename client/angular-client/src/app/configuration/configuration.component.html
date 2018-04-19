@@ -1,7 +1,7 @@
 <div>
   <div class="data_view">
     <h2>
-      <button class="data_button" (click)="refresh()">Load</button>
+      <button class="data_button" (click)="refresh()" >Load</button>
     </h2>
     <ul *ngIf="(configurations) else noData">
       <li *ngFor="let item of configurations">

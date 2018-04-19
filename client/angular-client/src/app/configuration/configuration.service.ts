@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpService} from "../http.service";
 import {Subject} from "rxjs/Subject";
 import {AlertService} from "../alert/alert.service";
+import {Data} from "../data-editor/data-editor.service";
 
 /**
  * single editable property
@@ -58,6 +59,21 @@ export class ConfigurationService {
 
   load():void {
     console.log("load data");
-    //this.httpService.load(this.objectUrl, this.subject, this._alertService, this._configurations);
+    this.httpService.load(this.objectUrl, this.retrieve.bind( this ));
+  }
+
+  /**
+   *
+   * @param result
+   */
+  retrieve( result:any ):void {
+    console.log("Configuration retrieve" );
+
+
+    //todo fill in configuration object here
+
+    //Emit the data to the subject so the data will refresh with the new value set
+    this.subject.next(this._configurations);
+
   }
 }

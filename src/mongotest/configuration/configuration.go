@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/mgo.v2"
+	"../mongodbmanager"
 
 	"../httpmanager"
 )
@@ -16,7 +16,8 @@ const(
 //
 type Context interface {
 	GetParameters() map[string]string
-	GetCollection() *mgo.Collection
+	GetSliceParameters() map[string][]string
+	GetCollection() mongodbmanager.CollectionWrapper
 }
 
 //Test data format
@@ -93,19 +94,23 @@ func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{
 	var results []ConfigurationData
 	var err error
 
-	context := appcontext.(Context)
 
-	//Load data
-	collection := context.GetCollection()
-	query := collection.Find(bson.M{})
-	query = query.Sort("value") //sort the data by its value
+	//todo fill configuration data
+	results = append(results, ConfigurationData{"ObjectId", "Value", "Id"})
 
-	query.All(&results) //execute the query
-
-	//Display the data returned for debugging
-	for index, result := range results {
-		fmt.Println(index, "id:", result.Id, "value:", result.Value)
-	}
+	//context := appcontext.(Context)
+	//collection := context.GetCollection()
+	//
+	////Load data
+	//query := collection.Find(bson.M{})
+	//query = query.Sort("value") //sort the data by its value
+	//
+	//query.All(&results) //execute the query
+	//
+	////Display the data returned for debugging
+	//for index, result := range results {
+	//	fmt.Println(index, "id:", result.Id, "value:", result.Value)
+	//}
 
 	fmt.Println("Finished loading data")
 
