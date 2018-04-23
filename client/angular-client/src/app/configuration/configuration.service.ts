@@ -69,8 +69,15 @@ export class ConfigurationService {
   retrieve( result:any ):void {
     console.log("Configuration retrieve" );
 
-
-    //todo fill in configuration object here
+    this._configurations = [];
+    for (let obj of result['configuration'])
+    {
+      console.log("Configuration retrieve data:" + obj['id'] + "," + obj['properties']);
+      let newObj:Configuration = new Configuration();
+      newObj.id = obj['id'];
+      newObj.properties = obj['properties'];
+      this._configurations.push(newObj);
+    }
 
     //Emit the data to the subject so the data will refresh with the new value set
     this.subject.next(this._configurations);

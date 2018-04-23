@@ -98,19 +98,20 @@ func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{
 	//todo fill configuration data
 	results = append(results, ConfigurationData{"ObjectId", "Value", "Id"})
 
-	//context := appcontext.(Context)
-	//collection := context.GetCollection()
-	//
+	context := appcontext.(mongodbmanager.ContextHolder)
+	info := context.GetMongoDBContext()
+	config := info.GetConfiguration()
+	fmt.Println(config)
 	////Load data
 	//query := collection.Find(bson.M{})
 	//query = query.Sort("value") //sort the data by its value
 	//
 	//query.All(&results) //execute the query
-	//
+
 	////Display the data returned for debugging
-	//for index, result := range results {
-	//	fmt.Println(index, "id:", result.Id, "value:", result.Value)
-	//}
+	for index, result := range results {
+		fmt.Println(index, "id:", result.Id, "value:", result.Value)
+	}
 
 	fmt.Println("Finished loading data")
 
