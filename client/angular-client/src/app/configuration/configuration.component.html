@@ -6,20 +6,10 @@
     <ul *ngIf="(configurations) else noData">
       <li *ngFor="let item of configurations">
         <button class="data_button" (click)="update( item.id )">Update</button>
-        <span class="value">{{item.value}}</span>
+        <span class="value">{{item['id']}}: {{item['properties']}}</span>
       </li>
     </ul>
     <ng-template #noData>No Data Available</ng-template>
 
-    <form class="db_config">
-      <h3>Database Configuration</h3>
-      <label>Database Name</label> <input type="text" ng-model="db.dbName" value="{{db.dbName}}"/> <br/>
-      <label>Collection Name</label> <input type="text" ng-model="db.collection" value="{{db.collection}}"/> <br/>
-      <label>Cluster</label> <input type="text" ng-model="db.cluster" value="{{db.cluster}}"/> <br/>
-      <label>User Database</label> <input type="text" ng-model="db.userDB" value="{{db.userDB}}"/> <br/>
-      <label>Username</label> <input type="text" ng-model="db.username" value="{{db.username}}"/> <br/>
-      <label>Password</label> <input type="text" ng-model="db.password" value="{{db.password}}"/> <br/>
-      <input type="submit" ng-click="updateDBConfig(db)" value="Submit Changes"/>
-    </form> <br/>
   </div>
 </div>

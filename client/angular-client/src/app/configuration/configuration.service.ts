@@ -70,12 +70,12 @@ export class ConfigurationService {
     console.log("Configuration retrieve" );
 
     this._configurations = [];
-    for (let obj of result['configuration'])
+    for (var obj in result)
     {
-      console.log("Configuration retrieve data:" + obj['id'] + "," + obj['properties']);
+      console.log("Configuration retrieve data:" + obj + obj['id'] + "," + obj['properties']);
       let newObj:Configuration = new Configuration();
-      newObj.id = obj['id'];
-      newObj.properties = obj['properties'];
+      newObj.id = obj;
+      newObj.properties = result[obj];
       this._configurations.push(newObj);
     }
 
