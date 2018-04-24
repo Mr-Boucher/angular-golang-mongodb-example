@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"net"
 	"time"
-	"src/gopkg.in/mgo.v2"
 )
 
 type ActionArgument interface{} //arguments for different actions

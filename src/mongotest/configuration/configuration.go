@@ -108,13 +108,12 @@ func (d *ConfigurationObject) update(context interface{}, arguments interface{} 
 	fmt.Println( "ConfigurationData::update arguments", arguments )
 	var err error
 
-	//id, ok := arguments.(string)
-	//if !ok {
-	//	panic( "Argument should be of type string" )
-	//}
-	//
-	//collection := context.(*mgo.Collection)
-	//collection.Remove( bson.M{"id": id} )
+	contextHolder := context.(mongodbmanager.ContextHolder)
+	mongo := contextHolder.GetMongoDBContext()
+	config := mongo.GetConfiguration()
+
+	fmt.Println(config)
+
 	fmt.Println("update:", "finished")
 	return nil, err
 }

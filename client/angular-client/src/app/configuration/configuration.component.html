@@ -5,8 +5,9 @@
     </h2>
     <ul *ngIf="(configurations) else noData">
       <li *ngFor="let item of configurations">
-        <button class="data_button" (click)="update( item.id )">Update</button>
-        <span class="value">{{item['id']}}: {{item['properties']}}</span>
+        <button class="data_button" (click)="update(item)">Update</button>
+        <span class="value_heading">{{item.id}}: </span>
+        <input class="value" value="{{item.properties}}"/>
       </li>
     </ul>
     <ng-template #noData>No Data Available</ng-template>

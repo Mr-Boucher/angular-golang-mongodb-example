@@ -54,7 +54,7 @@ export class ConfigurationService {
    * @param configuration
    */
   update(configuration:Configuration):void {
-    // this.httpService.update(configuration, this.objectUrl, this.subject, this._configurations);
+     this.httpService.update(configuration, this.objectUrl, this.updateItem.bind(this), this._configurations);
   }
 
   load():void {
@@ -82,5 +82,17 @@ export class ConfigurationService {
     //Emit the data to the subject so the data will refresh with the new value set
     this.subject.next(this._configurations);
 
+  }
+
+  /**
+   *
+   * @param {Configuration} item
+   */
+  updateItem(item:Configuration) {
+      console.log("Update item on the client");
+      // this._configurations[item.id] =
+      // this.subject.next(item);
+
+      console.log("")
   }
 }
