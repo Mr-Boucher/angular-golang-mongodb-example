@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"net"
 	"time"
+	"strings"
 )
 
 type ActionArgument interface{} //arguments for different actions
@@ -47,14 +48,16 @@ func (db *MongoDBManager) InitContext(contextHolder ContextHolder) {
 
 	fmt.Println("Opening connection to", dialInfo.Addrs, "as", dialInfo.Username, "from the", dialInfo.Database, "DB.")
 
-	//call the mongo server
-	tlsConfig := &tls.Config{} //todo figure out what this is
-	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-		conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
-		return conn, err
+	if (!strings.Contains(databaseConnectionInfo.Cluster[0],"localhost")) {
+		//call the mongo server
+		tlsConfig := &tls.Config{} //todo figure out what this is
+		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
+			conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
+			return conn, err
+		}
 	}
 
-	//Create the session
+		//Create the session
 	fmt.Println("Creating session:")
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
