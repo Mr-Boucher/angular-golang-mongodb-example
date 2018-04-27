@@ -12,7 +12,7 @@ const httpOptions = {
     'Accept': 'application/json', //only accept json responses
     'Content-Type': 'application/json', //set the sending data as json
     //'Access-Control-Request-Method': 'GET, POST, PUT, DELETE, OPTIONS',
-    //'Access-Control-Request-Origin': '*'
+    //'Access-Control-Request-Origin': '*',
   })
 };
 
@@ -76,8 +76,10 @@ export class HttpService {
    * @param subject
    * @param dataArray
      */
-  update(object:any, objectUrl:String, handleResult:Function, result:any) {
-    this._httpClient.put(this.host + objectUrl + object.id, httpOptions).subscribe(data=> {
+  update(object:any, objectUrl:String, handleResult:Function) {
+    console.log("update configuration: " + object);
+    let json = JSON.stringify(object);
+    this._httpClient.put(this.host + objectUrl + "/" + object.id, json, httpOptions).subscribe(result=> {
       handleResult( result );
     });
   }

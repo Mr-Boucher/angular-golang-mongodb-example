@@ -16,6 +16,12 @@ export class ConfigurationComponent implements OnInit {
 
   configurations:Configuration[];
 
+  colors:String[] = [
+    "pink",
+    "green",
+    "blue"
+  ];
+
   /**
    *
    * @param _configurationService
@@ -51,7 +57,15 @@ export class ConfigurationComponent implements OnInit {
    * @param data
    * @param $event
    */
-  update(data, $event) {
-    this._configurationService.update(data)
+  update(data, value:String, $event) {
+    this._configurationService.update(data, value);
+  }
+
+  /**
+   *
+   */
+  updateBackgroundColor() {
+    console.log("hitting background color");
+    console.log(this.colors);
   }
 }

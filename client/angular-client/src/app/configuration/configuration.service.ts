@@ -53,8 +53,12 @@ export class ConfigurationService {
    *
    * @param configuration
    */
-  update(configuration:Configuration):void {
-     this.httpService.update(configuration, this.objectUrl, this.updateItem.bind(this), this._configurations);
+  update(configuration:Configuration, value:String):void {
+
+    let newConfig = new ConfigurationProperty();
+    newConfig.value = value; //only set the value because the Id is created on the server
+    configuration.properties = newConfig;
+    this.httpService.update(configuration, this.objectUrl, this.updateItem.bind(this));
   }
 
   load():void {
@@ -90,9 +94,11 @@ export class ConfigurationService {
    */
   updateItem(item:Configuration) {
       console.log("Update item on the client");
-      // this._configurations[item.id] =
-      // this.subject.next(item);
 
-      console.log("")
+      console.log("Retrieved updated configuration");
+  }
+
+  updateBackgroundColor(color:String) {
+
   }
 }

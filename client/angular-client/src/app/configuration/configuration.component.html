@@ -5,12 +5,19 @@
     </h2>
     <ul *ngIf="(configurations) else noData">
       <li *ngFor="let item of configurations">
-        <button class="data_button" (click)="update(item)">Update</button>
-        <span class="value_heading">{{item.id}}: </span>
-        <input class="value" value="{{item.properties}}"/>
+        <button class="data_button" (click)="update(item, text_input.value)">Update</button>
+        <span for="text_input" class="value_heading">{{item.id}}: </span>
+        <input #text_input id="text_input" class="value" value="{{item.properties}}"/>
       </li>
     </ul>
     <ng-template #noData>No Data Available</ng-template>
 
+  </div>
+
+  <div class="web_configs">
+    <label id="color_label" name="color_label">Change Background Color</label>
+    <select class="background" ng-change="updateBackgroundColor(color)">
+      <option ng-repeat="color for color in colors">{{color}}</option>
+    </select>
   </div>
 </div>
