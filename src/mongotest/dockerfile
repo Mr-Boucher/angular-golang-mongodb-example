@@ -1,0 +1,47 @@
+# our base image
+FROM golang
+
+#GO GET Needed packages
+RUN go get "github.com/gorilla/mux"
+RUN go get "gopkg.in/mgo.v2"
+RUN go get "gopkg.in/mgo.v2/bson"
+RUN go get "github.com/rs/xid"
+
+#
+RUN echo $GOROOT
+RUN echo $GOPATH
+
+# Copy the local source files to the container's workspace.
+ADD . /go/src/mr-boucher/angular-golang-mongodb-example
+#ADD ./applicationmanager /go/src/mr-boucher/angular-golang-mongodb-example/applicationmanager
+#ADD ./configuration /go/src/mr-boucher/angular-golang-mongodb-example/configuration
+#ADD ./dataeditor /go/src/mr-boucher/angular-golang-mongodb-example/dataeditor
+#ADD ./httpmanager /go/src/mr-boucher/angular-golang-mongodb-example/httpmanager
+#ADD ./mongodbmanager /go/src/mr-boucher/angular-golang-mongodb-example/mongodbmanager
+
+RUN ls
+WORKDIR /go/src/mr-boucher/angular-golang-mongodb-example
+RUN ls
+RUN pwd
+RUN ls ./applicationmanager
+
+#Build in the docker image so that it is compiled to image native code
+RUN go build main.go
+RUN ls -l
+
+RUN chmod 777 ./main
+RUN ls -l ./main
+
+#
+#RUN go install mr-boucher/angular-golang-mongodb-example
+
+# Run the outyet command by default when the container starts.
+RUN ls /go/bin
+ENTRYPOINT /go/src/mr-boucher/angular-golang-mongodb-example
+
+# specify the port number the container should expose
+EXPOSE 8000
+
+# run the application
+CMD ["./main"]
+
