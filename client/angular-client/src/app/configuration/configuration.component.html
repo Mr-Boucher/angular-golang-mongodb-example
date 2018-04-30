@@ -14,10 +14,12 @@
 
   </div>
 
-  <div class="web_configs">
+  <div id="webconfigurations" class="web_configs">
     <label id="color_label" name="color_label">Change Background Color</label>
-    <select class="background" ng-change="updateBackgroundColor(color)">
-      <option ng-repeat="color for color in colors">{{color}}</option>
+    <select #colorlist id="color" class="background" (change)="updateBackgroundColor(colorlist.value)">
+      <option value="pink">Pink</option>
+      <option value="blue">Blue</option>
+      <option value="green">Green</option>
     </select>
   </div>
 </div>

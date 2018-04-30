@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {ConfigurationService} from "./configuration.service";
 import {Configuration} from "./configuration.service";
+import {selector} from "rxjs/operator/publish";
+import {Subject} from "rxjs/Subject";
 
 
 /**
@@ -15,13 +17,10 @@ import {Configuration} from "./configuration.service";
 export class ConfigurationComponent implements OnInit {
 
   configurations:Configuration[];
-
-  colors:String[] = [
-    "pink",
-    "green",
-    "blue"
-  ];
-
+  colorList:HTMLSelectElement;
+  webconfigurations:HTMLElement;
+  subject:Subject<HTMLSelectElement> = new Subject();
+  divWatch:Subject<HTMLElement> = new Subject();
   /**
    *
    * @param _configurationService
@@ -64,8 +63,14 @@ export class ConfigurationComponent implements OnInit {
   /**
    *
    */
-  updateBackgroundColor() {
+  updateBackgroundColor(color:string) {
     console.log("hitting background color");
-    console.log(this.colors);
+    console.log("selected color is " + color);
+    var divElement = document.getElementById("webconfigurations");
+    divElement.style.backgroundColor = color;
+    this.webconfigurations = divElement;
+    this.divWatch.next(this.webconfigurations);
+    console.log("color has been updated");
+
   }
 }

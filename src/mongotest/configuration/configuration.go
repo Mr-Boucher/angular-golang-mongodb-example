@@ -126,7 +126,7 @@ func (d *ConfigurationObject) update(context interface{}, arguments interface{} 
 	}
 
 	fmt.Println(updateObject)
-	//missing database cluster right now
+
 	switch updateObject.Id {
 	case "DatabaseName":
 		contextHolder.DatabaseName = updateObject.Value.Value
