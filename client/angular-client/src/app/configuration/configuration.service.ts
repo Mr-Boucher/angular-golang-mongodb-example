@@ -93,12 +93,8 @@ export class ConfigurationService {
    * @param {Configuration} item
    */
   updateItem(item:Configuration) {
-      console.log("Update item on the client");
-      this.retrieve(item);
-      console.log("Retrieved updated configuration");
-  }
-
-  updateBackgroundColor(color:String) {
-
+    console.log("Update item on the client");
+    this.retrieve(item);
+    console.log("Retrieved updated configuration");
   }
 }
