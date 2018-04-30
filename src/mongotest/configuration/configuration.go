@@ -9,6 +9,7 @@ import (
 	"../httpmanager"
 	"reflect"
 	"strconv"
+	"log"
 )
 
 const(
@@ -116,44 +117,46 @@ func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{
 func (d *ConfigurationObject) update(context interface{}, arguments interface{} ) (interface{}, error) {
 	fmt.Println( "ConfigurationDataUpdate::update arguments", arguments )
 	var err error
-
-	contextHolder := context.(mongodbmanager.ContextHolder)
-	mongo := contextHolder.GetMongoDBContext()
-	config := mongo.GetConfiguration()
-
+	contextHolder := context.(mongodbmanager.ContextHolder).GetMongoDBContext().GetConfiguration()
 	updateObject, ok := arguments.(ConfigurationDataUpdate)
 
 	if !ok {
-		errorMessage := fmt.Sprint("Argument should be of type ConfigurationDataUpdate. It was ", reflect.TypeOf(arguments))
-		panic(errorMessage)
+		err := fmt.Sprint("Argument should be of type ConfigurationDataUpdate. It was ", reflect.TypeOf(arguments))
+		log.Fatal(err)
 	}
 
 	fmt.Println(updateObject)
 	//missing database cluster right now
-	if (updateObject.Id == "DatabaseName") {
-		config.DatabaseName = updateObject.Value.Value
-	} else if (updateObject.Id == "CollectionName") {
-		config.CollectionName = updateObject.Value.Value
-	} else if (updateObject.Id == "UserDatabase") {
-		config.UserDatabase = updateObject.Value.Value
-	} else if (updateObject.Id == "Username") {
-		config.Username = updateObject.Value.Value
-	} else if (updateObject.Id == "Password") {
-		config.Password = updateObject.Value.Value
-	} else if (updateObject.Id == "ConnectionTimeOut") {
+	switch updateObject.Id {
+	case "DatabaseName":
+		contextHolder.DatabaseName = updateObject.Value.Value
+	case "CollectionName":
+		contextHolder.CollectionName = updateObject.Value.Value
+	case "UserDatabase":
+		contextHolder.UserDatabase = updateObject.Value.Value
+	case "Cluster":
+		contextHolder.Cluster = []string{updateObject.Value.Value}
+	case "Username":
+		contextHolder.Username = updateObject.Value.Value
+	case "Password":
+		contextHolder.Password = updateObject.Value.Value
+	case "ConnectionTimeOut":
 		connectionTimeOut, err := strconv.Atoi(updateObject.Value.Value)
 		if err != nil {
-			config.ConnectionTimeOut = connectionTimeOut
+			contextHolder.ConnectionTimeOut = connectionTimeOut
 		} else {
 			errorMessage := fmt.Sprint(err)
 			panic(errorMessage)
 		}
+	default:
+		err := fmt.Sprint("trying to update an unknown MongoDBConfiguration field ", updateObject.Value.Id)
+		log.Fatal(err)
 	}
 
-	fmt.Println(config)
+	fmt.Println(contextHolder)
 
 	fmt.Println("update:", "finished")
-	return nil, err
+	return contextHolder, err
 }
 
 
