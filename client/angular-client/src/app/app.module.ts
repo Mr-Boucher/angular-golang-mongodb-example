@@ -14,6 +14,8 @@ import {AlertComponent} from "./alert/alert.component";
 import {AlertService} from "./alert/alert.service";
 import {DataEditorService} from "./data-editor/data-editor.service";
 import {ConfigurationService} from "./configuration/configuration.service";
+import {TestService} from "./test/test.service";
+import {TestComponent} from "./test/test.component";
 
 
 @NgModule({
@@ -21,6 +23,7 @@ import {ConfigurationService} from "./configuration/configuration.service";
     AppComponent,
     DataEditorComponent,
     ConfigurationComponent,
+    TestComponent,
     AlertComponent
   ],
   imports: [
@@ -34,7 +37,8 @@ import {ConfigurationService} from "./configuration/configuration.service";
     HttpService,
     AlertService,
     DataEditorService,
-    ConfigurationService
+    ConfigurationService,
+    TestService
   ],
   bootstrap: [AppComponent]
 })

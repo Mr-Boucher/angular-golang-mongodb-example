@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {HttpService} from "../http.service";
 import {Subject} from "rxjs/Subject";
 import {AlertService} from "../alert/alert.service";
-import {Data} from "../data-editor/data-editor.service";
 
 /**
  * single editable property

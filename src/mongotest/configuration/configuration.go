@@ -98,22 +98,20 @@ func (d *ConfigurationObject) Unmarshal( payload []byte ) (interface {}, error) 
 	return theData, err
 }
 
-//
+// load db configuration
 func (d *ConfigurationObject) load( appcontext interface{}, arguments interface{} ) (interface{}, error) {
 	fmt.Println( "ConfigurationData::load arguments", arguments )
 	var err error
 
-	context := appcontext.(mongodbmanager.ContextHolder)
-	info := context.GetMongoDBContext()
-	config := info.GetConfiguration()
-	fmt.Println(config)
+	context := appcontext.(mongodbmanager.ContextHolder).GetMongoDBContext().GetConfiguration()
+	fmt.Println(context)
 
 	fmt.Println("Finished loading data")
 
-	return config, err
+	return context, err
 }
 
-////remove data from db base
+////update db configuration
 func (d *ConfigurationObject) update(context interface{}, arguments interface{} ) (interface{}, error) {
 	fmt.Println( "ConfigurationDataUpdate::update arguments", arguments )
 	var err error
@@ -145,8 +143,7 @@ func (d *ConfigurationObject) update(context interface{}, arguments interface{} 
 		if err != nil {
 			contextHolder.ConnectionTimeOut = connectionTimeOut
 		} else {
-			errorMessage := fmt.Sprint(err)
-			panic(errorMessage)
+			log.Fatal(err)
 		}
 	default:
 		err := fmt.Sprint("trying to update an unknown MongoDBConfiguration field ", updateObject.Value.Id)
